@@ -1,0 +1,11 @@
+services:
+  onboardingapi:
+    build:
+      context: ..
+      dockerfile: OnboardingPlatform.API/Dockerfile
+    container_name: onboarding_api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Server=host.docker.internal,1433;Database=CustomerOnboardingDb;User Id=sa;Password=YourPassword123;TrustServerCertificate=True;Encrypt=False;"
+    ports:
+      - "5000:80"
