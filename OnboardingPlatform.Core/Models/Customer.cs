@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OnboardingPlatform.Core.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,20 +9,21 @@ namespace OnboardingPlatform.Core.Models
 {
     public class Customer
     {
-        public int CustomerId { get; set; }
-        public string FirstName { get; set; }
-        public string MiddleName { get; set; } = string.Empty;
-        public string LastName { get; set; }
-        public DateOnly DateOfBirth { get; set; }
-        public string Gender { get; set; }
-        public string PhoneNumber { get; set; }
-        public string Email { get; set; }
-        public string Nationality { get; set; }
-        public string BVN { get; set; }
-        public string Password { get; set; }
-        public string Status { get; set; }
+        public Guid CustomerId { get; set; } = Guid.NewGuid();
+        public string FirstName { get; set; } = string.Empty;
+        public string? MiddleName { get; set; }
+        public string LastName { get; set; } = string.Empty;
+        public DateTime? DateOfBirth { get; set; }
+        public string? Gender { get; set; }
+        public string? Nationality { get; set; }
+        public CustomerStatus Status { get; set; } = CustomerStatus.ACTIVE;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime UpdatedAt { get; set; } = DateTime.Now;
 
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        // Navigation
+        public ICollection<CustomerIdentifier> Identifiers { get; set; } = new List<CustomerIdentifier>();
+        public ICollection<CustomerAddress> Addresses { get; set; } = new List<CustomerAddress>();
+        public ICollection<CustomerProduct> CustomerProducts { get; set; } = new List<CustomerProduct>();
     }
+
 }

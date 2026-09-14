@@ -25,7 +25,7 @@ namespace OnboardingPlatform.Core.Models
 
         public string ContributionScheme { get; set; } // "MandatoryCPS", "Voluntary", "MicroPensionPlan"
 
-        public DateTime DateRegistered { get; set; } = DateTime.UtcNow;
+        public DateTime DateRegistered { get; set; } = DateTime.Now;
 
         public string Status { get; set; } = "Active";
     }

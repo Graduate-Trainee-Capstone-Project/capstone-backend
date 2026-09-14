@@ -10,4 +10,9 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\OnboardingPlatform.Core\OnboardingPlatform.Core.csproj" />
+    <ProjectReference Include="..\OnboardingPlatform.Data\OnboardingPlatform.Data.csproj" />
+  </ItemGroup>
+
 </Project>

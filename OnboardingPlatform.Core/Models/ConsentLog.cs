@@ -23,7 +23,7 @@ namespace OnboardingPlatform.Core.Models
 
         public string ConsentType { get; set; } = "REUSE_KYC_DATA";
 
-        public DateTime GrantedAt { get; set; } = DateTime.UtcNow;
+        public DateTime GrantedAt { get; set; } = DateTime.Now;
 
         public string Channel { get; set; } = "Web";
     }
