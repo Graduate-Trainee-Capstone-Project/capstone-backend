@@ -12,7 +12,7 @@ using OnboardingPlatform.Data.Implementations;
 namespace OnboardingPlatform.Data.Migrations
 {
     [DbContext(typeof(CustomerDbContext))]
-    [Migration("20260913141711_InitialCreate")]
+    [Migration("20260914131337_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

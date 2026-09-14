@@ -9,7 +9,7 @@ RUN dotnet publish "OnboardingPlatform.API/OnboardingPlatform.API.csproj" -c Rel
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
-ENV ASPNETCORE_URLS=http://+:80
-EXPOSE 80
+ENV ASPNETCORE_URLS=http://+:8080
+EXPOSE 8080
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "OnboardingPlatform.API.dll"]
