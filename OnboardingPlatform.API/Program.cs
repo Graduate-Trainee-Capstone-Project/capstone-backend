@@ -21,8 +21,13 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // Register DbContexts
-builder.Services.AddDbContext<CustomerDbContext>(options =>
+builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
+// ── DI ────────────────────────────────────────────────────────
+builder.Services.AddScoped<IIdentityService, IdentityService>();
+builder.Services.AddScoped<IApplicationService, ApplicationService>();
 
 builder.Services.AddCors(options =>
 {
@@ -38,6 +43,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddSingleton<IHealthService, HealthService>();
 
 var app = builder.Build();
+
+app.ApplyDatabaseMigrations<AppDbContext>(app.Services.GetRequiredService<ILogger<AppDbContext>>());
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())

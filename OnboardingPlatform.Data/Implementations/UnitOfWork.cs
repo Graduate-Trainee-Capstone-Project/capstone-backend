@@ -9,11 +9,11 @@ namespace OnboardingPlatform.Data.Implementations
     public class UnitOfWork : IUnitOfWork
     {
         private readonly ILogger<UnitOfWork> _logger;
-        private readonly CustomerDbContext _customerDb;
+        private readonly AppDbContext _customerDb;
 
         public UnitOfWork(
             ILogger<UnitOfWork> logger,
-            CustomerDbContext customerDb)
+            AppDbContext customerDb)
         {
             _logger = logger;
             _customerDb = customerDb;
@@ -33,7 +33,7 @@ namespace OnboardingPlatform.Data.Implementations
                     LastName = request.LastName,
 
 
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.Now
                 };
 
                 _customerDb.Customers.Add(customer);
