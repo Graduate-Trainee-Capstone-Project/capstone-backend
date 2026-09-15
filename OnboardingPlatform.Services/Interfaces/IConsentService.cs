@@ -5,7 +5,7 @@ namespace OnboardingPlatform.Services.Interfaces
 {
     public interface IConsentService
     {
-        Task RecordConsentAsync(Guid customerId, Guid productId, Channel channel);
+        Task<ConsentResponse> RecordConsentAsync(Guid customerId, Guid productId, Channel channel);
         Task<List<ConsentResponse>> GetByCustomerAsync(Guid customerId);
     }
 }

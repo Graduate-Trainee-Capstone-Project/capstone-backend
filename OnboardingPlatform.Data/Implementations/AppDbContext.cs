@@ -26,6 +26,7 @@ namespace OnboardingPlatform.Data.Implementations
         public DbSet<SavingsAccountDetail> SavingsAccountDetails => Set<SavingsAccountDetail>();
         public DbSet<PensionAccountDetail> PensionAccountDetails => Set<PensionAccountDetail>();
         public DbSet<SecurityCheck> SecurityChecks => Set<SecurityCheck>();
+        public DbSet<StockBrokingAccountDetail> StockBrokingAccountDetails => Set<StockBrokingAccountDetail>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -189,6 +190,20 @@ namespace OnboardingPlatform.Data.Implementations
                 e.HasOne(p => p.CustomerProduct)
                     .WithMany()
                     .HasForeignKey(p => p.CustomerProductId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // ── Stock Broking Account Details ────────────────────────
+            modelBuilder.Entity<StockBrokingAccountDetail>(e =>
+            {
+                e.HasKey(s => s.StockBrokingAccountId);
+                e.Property(s => s.Status).HasConversion<string>();
+                e.Property(s => s.CscsNumber).HasMaxLength(20);
+                e.Property(s => s.TradingAccountNumber).HasMaxLength(20);
+
+                e.HasOne(s => s.CustomerProduct)
+                    .WithMany()
+                    .HasForeignKey(s => s.CustomerProductId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
         }

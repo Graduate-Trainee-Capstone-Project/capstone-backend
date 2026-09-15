@@ -383,7 +383,7 @@ namespace OnboardingPlatform.Data.Migrations
                         new
                         {
                             ProductId = new Guid("aaaaaaaa-0001-0001-0001-aaaaaaaaaaaa"),
-                            CreatedAt = new DateTime(2026, 9, 15, 12, 2, 42, 846, DateTimeKind.Local).AddTicks(6642),
+                            CreatedAt = new DateTime(2026, 9, 15, 16, 52, 27, 813, DateTimeKind.Local).AddTicks(6143),
                             IsActive = true,
                             ProductCode = "SAVINGS",
                             ProductName = "Savings Account",
@@ -392,7 +392,7 @@ namespace OnboardingPlatform.Data.Migrations
                         new
                         {
                             ProductId = new Guid("aaaaaaaa-0002-0002-0002-aaaaaaaaaaaa"),
-                            CreatedAt = new DateTime(2026, 9, 15, 12, 2, 42, 846, DateTimeKind.Local).AddTicks(6661),
+                            CreatedAt = new DateTime(2026, 9, 15, 16, 52, 27, 813, DateTimeKind.Local).AddTicks(6152),
                             IsActive = true,
                             ProductCode = "CURRENT",
                             ProductName = "Current Account",
@@ -401,7 +401,7 @@ namespace OnboardingPlatform.Data.Migrations
                         new
                         {
                             ProductId = new Guid("aaaaaaaa-0003-0003-0003-aaaaaaaaaaaa"),
-                            CreatedAt = new DateTime(2026, 9, 15, 12, 2, 42, 846, DateTimeKind.Local).AddTicks(6665),
+                            CreatedAt = new DateTime(2026, 9, 15, 16, 52, 27, 813, DateTimeKind.Local).AddTicks(6160),
                             IsActive = true,
                             ProductCode = "PENSION_RSA",
                             ProductName = "Pension (RSA)",
@@ -410,7 +410,7 @@ namespace OnboardingPlatform.Data.Migrations
                         new
                         {
                             ProductId = new Guid("aaaaaaaa-0004-0004-0004-aaaaaaaaaaaa"),
-                            CreatedAt = new DateTime(2026, 9, 15, 12, 2, 42, 846, DateTimeKind.Local).AddTicks(6668),
+                            CreatedAt = new DateTime(2026, 9, 15, 16, 52, 27, 813, DateTimeKind.Local).AddTicks(6169),
                             IsActive = true,
                             ProductCode = "STOCKBROKING",
                             ProductName = "Stockbroking",
@@ -419,7 +419,7 @@ namespace OnboardingPlatform.Data.Migrations
                         new
                         {
                             ProductId = new Guid("aaaaaaaa-0005-0005-0005-aaaaaaaaaaaa"),
-                            CreatedAt = new DateTime(2026, 9, 15, 12, 2, 42, 846, DateTimeKind.Local).AddTicks(6672),
+                            CreatedAt = new DateTime(2026, 9, 15, 16, 52, 27, 813, DateTimeKind.Local).AddTicks(6176),
                             IsActive = true,
                             ProductCode = "INSURANCE",
                             ProductName = "Insurance",
@@ -493,6 +493,43 @@ namespace OnboardingPlatform.Data.Migrations
                     b.HasIndex("DraftId");
 
                     b.ToTable("SecurityChecks");
+                });
+
+            modelBuilder.Entity("OnboardingPlatform.Core.Models.StockBrokingAccountDetail", b =>
+                {
+                    b.Property<Guid>("StockBrokingAccountId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("BrokerageFirm")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CscsNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("CustomerProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly>("DateOpened")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TradingAccountNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("StockBrokingAccountId");
+
+                    b.HasIndex("CustomerProductId");
+
+                    b.ToTable("StockBrokingAccountDetails");
                 });
 
             modelBuilder.Entity("OnboardingPlatform.Core.Models.ConsentLog", b =>
@@ -614,6 +651,17 @@ namespace OnboardingPlatform.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("DraftApplication");
+                });
+
+            modelBuilder.Entity("OnboardingPlatform.Core.Models.StockBrokingAccountDetail", b =>
+                {
+                    b.HasOne("OnboardingPlatform.Core.Models.CustomerProduct", "CustomerProduct")
+                        .WithMany()
+                        .HasForeignKey("CustomerProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CustomerProduct");
                 });
 
             modelBuilder.Entity("OnboardingPlatform.Core.Models.Customer", b =>
