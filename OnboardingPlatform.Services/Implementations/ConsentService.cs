@@ -1,10 +1,10 @@
-﻿using OnboardingPlatform.Core.DTOs.Responses;
+﻿using Microsoft.EntityFrameworkCore;
+using OnboardingPlatform.Core.DTOs.Responses;
 using OnboardingPlatform.Core.Enums;
+using OnboardingPlatform.Core.Mapper;
 using OnboardingPlatform.Core.Models;
 using OnboardingPlatform.Data.Implementations;
 using OnboardingPlatform.Services.Interfaces;
-using OnboardingPlatform.Core.Mapper;
-using Microsoft.EntityFrameworkCore;
 
 namespace OnboardingPlatform.Services.Implementations
 {
@@ -14,9 +14,17 @@ namespace OnboardingPlatform.Services.Implementations
 
         public ConsentService(AppDbContext context) => _context = context;
 
-        public Task RecordConsentAsync(Guid customerId, Guid productId, Channel channel)
+        public async Task<ConsentResponse> RecordConsentAsync(Guid customerId, Guid productId, Channel channel)
         {
-            _context.ConsentLogs.Add(new ConsentLog
+            var customerExists = await _context.Customers.AnyAsync(c => c.CustomerId == customerId);
+            if (!customerExists)
+                throw new KeyNotFoundException($"Customer '{customerId}' was not found.");
+
+            var productExists = await _context.Products.AnyAsync(p => p.ProductId == productId);
+            if (!productExists)
+                throw new KeyNotFoundException($"Product '{productId}' was not found.");
+
+            var consent = new ConsentLog
             {
                 ConsentId = Guid.NewGuid(),
                 CustomerId = customerId,
@@ -24,8 +32,12 @@ namespace OnboardingPlatform.Services.Implementations
                 ConsentType = "REUSE_KYC_DATA",
                 GrantedAt = DateTime.Now,
                 Channel = channel
-            });
-            return Task.CompletedTask;
+            };
+
+            _context.ConsentLogs.Add(consent);
+            await _context.SaveChangesAsync();
+
+            return consent.ToResponse();
         }
 
         public async Task<List<ConsentResponse>> GetByCustomerAsync(Guid customerId)

@@ -35,6 +35,7 @@ builder.Services.AddScoped<IConsentService, ConsentService>();
 builder.Services.AddScoped<IPensionAccountService, PensionAccountService>();
 builder.Services.AddScoped<ISavingsAccountService, SavingsAccountService>();
 builder.Services.AddScoped<ICurrentAccountService, CurrentAccountService>();
+builder.Services.AddScoped<IStockBrokingAccountService, StockBrokingAccountService>();
 
 builder.Services.AddCors(options =>
 {

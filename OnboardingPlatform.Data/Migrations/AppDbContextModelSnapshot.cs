@@ -503,6 +503,43 @@ namespace OnboardingPlatform.Data.Migrations
                     b.ToTable("SecurityChecks");
                 });
 
+            modelBuilder.Entity("OnboardingPlatform.Core.Models.StockBrokingAccountDetail", b =>
+                {
+                    b.Property<Guid>("StockBrokingAccountId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("BrokerageFirm")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CscsNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("CustomerProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly>("DateOpened")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TradingAccountNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("StockBrokingAccountId");
+
+                    b.HasIndex("CustomerProductId");
+
+                    b.ToTable("StockBrokingAccountDetails");
+                });
+
             modelBuilder.Entity("OnboardingPlatform.Core.Models.ConsentLog", b =>
                 {
                     b.HasOne("OnboardingPlatform.Core.Models.Customer", "Customer")
@@ -622,6 +659,17 @@ namespace OnboardingPlatform.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("DraftApplication");
+                });
+
+            modelBuilder.Entity("OnboardingPlatform.Core.Models.StockBrokingAccountDetail", b =>
+                {
+                    b.HasOne("OnboardingPlatform.Core.Models.CustomerProduct", "CustomerProduct")
+                        .WithMany()
+                        .HasForeignKey("CustomerProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CustomerProduct");
                 });
 
             modelBuilder.Entity("OnboardingPlatform.Core.Models.Customer", b =>
