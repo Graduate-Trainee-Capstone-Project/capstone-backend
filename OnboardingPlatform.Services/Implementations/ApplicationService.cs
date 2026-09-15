@@ -355,7 +355,31 @@ namespace OnboardingPlatform.Services.Implementations
                 }
             }
 
-            // 4. Create the CustomerProduct link
+            // 4. Create or reuse the CustomerProduct link
+            var existingCustomerProduct = await _db.CustomerProducts
+                .FirstOrDefaultAsync(cp =>
+                    cp.CustomerId == customerId &&
+                    cp.ProductId == draft.ProductId);
+
+            if (existingCustomerProduct is not null)
+            {
+                // The customer already owns this product.
+                // Mark this draft as completed instead of inserting a duplicate link.
+                draft.Status = DraftStatus.SUBMITTED;
+                draft.CurrentStep = DraftStep.SUBMITTED;
+                draft.LastUpdatedAt = DateTime.Now;
+
+                await _db.SaveChangesAsync();
+
+                return new FinalizeApplicationResponse
+                {
+                    CustomerId = customerId,
+                    CustomerProductId = existingCustomerProduct.CustomerProductId,
+                    ProductAccountReference = GenerateAccountReference(draft.Product.ProductCode),
+                    Status = existingCustomerProduct.Status.ToString()
+                };
+            }
+
             var customerProduct = new CustomerProduct
             {
                 CustomerProductId = Guid.NewGuid(),
@@ -365,6 +389,7 @@ namespace OnboardingPlatform.Services.Implementations
                 Status = CustomerProductStatus.ACTIVE,
                 CreatedAt = DateTime.Now
             };
+
             _db.CustomerProducts.Add(customerProduct);
 
             // 5. Generate mock account reference based on product type
