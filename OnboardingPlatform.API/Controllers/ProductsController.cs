@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OnboardingPlatform.API.Mappers;
+using OnboardingPlatform.Core.Enums;
 using OnboardingPlatform.Data.Implementations;
 
 namespace OnboardingPlatform.API.Controllers
@@ -33,10 +34,22 @@ namespace OnboardingPlatform.API.Controllers
         [HttpGet("{productCode}")]
         public async Task<IActionResult> GetByCode(string productCode)
         {
-            var product = await _db.Products
-                .FirstOrDefaultAsync(p => p.ProductCode.ToString() == productCode.ToUpper() && p.IsActive);
+            if (!Enum.TryParse<ProductCode>(
+                    productCode,
+                    ignoreCase: true,
+                    out var parsedProductCode))
+            {
+                return NotFound();
+            }
 
-            return product is null ? NotFound() : Ok(ProductMapper.ToResponse(product));
+            var product = await _db.Products
+                .FirstOrDefaultAsync(p =>
+                    p.ProductCode == parsedProductCode &&
+                    p.IsActive);
+
+            return product is null
+                ? NotFound()
+                : Ok(ProductMapper.ToResponse(product));
         }
     }
 }

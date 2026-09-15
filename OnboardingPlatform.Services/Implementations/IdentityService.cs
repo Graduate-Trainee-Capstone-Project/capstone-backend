@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using OnboardingPlatform.Core.Enums;
 using OnboardingPlatform.Data.Implementations;
 using OnboardingPlatform.Services.Interfaces;
 using System;
@@ -39,9 +40,18 @@ namespace OnboardingPlatform.Services.Implementations
             string? secondaryType = null,
             string? secondaryHash = null)
         {
+            if (!Enum.TryParse<IdentifierType>(
+                    identifierType,
+                    ignoreCase: true,
+                    out var parsedIdentifierType))
+            {
+                return null;
+            }
+
+
             var primary = await _db.CustomerIdentifiers
                 .FirstOrDefaultAsync(i =>
-                    i.IdentifierType.ToString() == identifierType &&
+                    i.IdentifierType == parsedIdentifierType &&
                     i.IdentifierValueHash == identifierHash);
 
             if (primary == null) return null;
@@ -50,9 +60,18 @@ namespace OnboardingPlatform.Services.Implementations
             // we verify both belong to the same customer
             if (secondaryType != null && secondaryHash != null)
             {
+                if (!Enum.TryParse<IdentifierType>(
+                        secondaryType,
+                        ignoreCase: true,
+                        out var parsedSecondaryType))
+                {
+                    return null;
+                }
+
+
                 var secondary = await _db.CustomerIdentifiers
                     .FirstOrDefaultAsync(i =>
-                        i.IdentifierType.ToString() == secondaryType &&
+                        i.IdentifierType == parsedSecondaryType &&
                         i.IdentifierValueHash == secondaryHash &&
                         i.CustomerId == primary.CustomerId);
 

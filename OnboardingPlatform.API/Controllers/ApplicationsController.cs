@@ -36,12 +36,11 @@ namespace OnboardingPlatform.API.Controllers
         /// Converts a completed draft into a real Customer + CustomerProduct.
         /// </summary>
         [HttpPost("{draftId}/finalize")]
-        public async Task<IActionResult> Finalize(Guid draftId, [FromBody] FinalizeApplicationRequest request)
+        public async Task<IActionResult> Finalize(Guid draftId)
         {
             try
             {
-                request.DraftId = draftId;
-                var result = await _appService.FinalizeApplicationAsync(request);
+                var result = await _appService.FinalizeApplicationAsync(draftId);
                 return Ok(result);
             }
             catch (InvalidOperationException ex)

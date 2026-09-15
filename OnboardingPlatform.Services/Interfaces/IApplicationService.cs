@@ -11,6 +11,6 @@ namespace OnboardingPlatform.Services.Interfaces
     public interface IApplicationService
     {
         Task<StartApplicationResponse> StartApplicationAsync(StartApplicationRequest request);
-        Task<FinalizeApplicationResponse> FinalizeApplicationAsync(FinalizeApplicationRequest request);
+        Task<FinalizeApplicationResponse> FinalizeApplicationAsync(Guid draftId);  // no request body
     }
 }

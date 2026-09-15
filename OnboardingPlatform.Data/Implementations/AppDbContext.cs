@@ -36,6 +36,12 @@ namespace OnboardingPlatform.Data.Implementations
             modelBuilder.Entity<Customer>(e =>
             {
                 e.HasKey(c => c.CustomerId);
+                e.Property(c => c.Email)
+                   .HasMaxLength(200)
+                    .IsRequired(false);
+                e.Property(c => c.PhoneNumber)
+                    .HasMaxLength(20)
+                    .IsRequired(false);
                 e.Property(c => c.Status).HasConversion<string>();
                 e.HasMany(c => c.Identifiers)
                  .WithOne(i => i.Customer)

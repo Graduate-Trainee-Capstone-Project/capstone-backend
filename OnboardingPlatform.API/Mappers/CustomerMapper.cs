@@ -12,6 +12,9 @@ namespace OnboardingPlatform.API.Mappers
             customer.LastName,
             customer.DateOfBirth,
             customer.Gender,
+            customer.Nationality,
+            customer.PhoneNumber,
+            customer.Email,
             customer.Status,
             Addresses = customer.Addresses.Select(a => new
             {
