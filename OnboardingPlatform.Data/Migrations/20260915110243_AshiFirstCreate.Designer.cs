@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OnboardingPlatform.Data.Implementations;
 
@@ -11,9 +12,11 @@ using OnboardingPlatform.Data.Implementations;
 namespace OnboardingPlatform.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260915110243_AshiFirstCreate")]
+    partial class AshiFirstCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -105,10 +108,6 @@ namespace OnboardingPlatform.Data.Migrations
                     b.Property<DateTime?>("DateOfBirth")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Email")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -125,10 +124,6 @@ namespace OnboardingPlatform.Data.Migrations
 
                     b.Property<string>("Nationality")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -391,7 +386,7 @@ namespace OnboardingPlatform.Data.Migrations
                         new
                         {
                             ProductId = new Guid("aaaaaaaa-0001-0001-0001-aaaaaaaaaaaa"),
-                            CreatedAt = new DateTime(2026, 9, 15, 6, 29, 54, 906, DateTimeKind.Local).AddTicks(9910),
+                            CreatedAt = new DateTime(2026, 9, 15, 12, 2, 42, 846, DateTimeKind.Local).AddTicks(6642),
                             IsActive = true,
                             ProductCode = "SAVINGS",
                             ProductName = "Savings Account",
@@ -400,7 +395,7 @@ namespace OnboardingPlatform.Data.Migrations
                         new
                         {
                             ProductId = new Guid("aaaaaaaa-0002-0002-0002-aaaaaaaaaaaa"),
-                            CreatedAt = new DateTime(2026, 9, 15, 6, 29, 54, 906, DateTimeKind.Local).AddTicks(9916),
+                            CreatedAt = new DateTime(2026, 9, 15, 12, 2, 42, 846, DateTimeKind.Local).AddTicks(6661),
                             IsActive = true,
                             ProductCode = "CURRENT",
                             ProductName = "Current Account",
@@ -409,7 +404,7 @@ namespace OnboardingPlatform.Data.Migrations
                         new
                         {
                             ProductId = new Guid("aaaaaaaa-0003-0003-0003-aaaaaaaaaaaa"),
-                            CreatedAt = new DateTime(2026, 9, 15, 6, 29, 54, 906, DateTimeKind.Local).AddTicks(9921),
+                            CreatedAt = new DateTime(2026, 9, 15, 12, 2, 42, 846, DateTimeKind.Local).AddTicks(6665),
                             IsActive = true,
                             ProductCode = "PENSION_RSA",
                             ProductName = "Pension (RSA)",
@@ -418,7 +413,7 @@ namespace OnboardingPlatform.Data.Migrations
                         new
                         {
                             ProductId = new Guid("aaaaaaaa-0004-0004-0004-aaaaaaaaaaaa"),
-                            CreatedAt = new DateTime(2026, 9, 15, 6, 29, 54, 906, DateTimeKind.Local).AddTicks(9925),
+                            CreatedAt = new DateTime(2026, 9, 15, 12, 2, 42, 846, DateTimeKind.Local).AddTicks(6668),
                             IsActive = true,
                             ProductCode = "STOCKBROKING",
                             ProductName = "Stockbroking",
@@ -427,7 +422,7 @@ namespace OnboardingPlatform.Data.Migrations
                         new
                         {
                             ProductId = new Guid("aaaaaaaa-0005-0005-0005-aaaaaaaaaaaa"),
-                            CreatedAt = new DateTime(2026, 9, 15, 6, 29, 54, 906, DateTimeKind.Local).AddTicks(9943),
+                            CreatedAt = new DateTime(2026, 9, 15, 12, 2, 42, 846, DateTimeKind.Local).AddTicks(6672),
                             IsActive = true,
                             ProductCode = "INSURANCE",
                             ProductName = "Insurance",

@@ -22,12 +22,19 @@ builder.Services.AddSwaggerGen(c =>
 
 // Register DbContexts
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
 // ── DI ────────────────────────────────────────────────────────
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<IApplicationService, ApplicationService>();
+builder.Services.AddScoped<IDraftService, DraftService>();
+builder.Services.AddScoped<ISecurityService, SecurityService>();
+builder.Services.AddScoped<IConsentService, ConsentService>();
+builder.Services.AddScoped<IPensionAccountService, PensionAccountService>();
+builder.Services.AddScoped<ISavingsAccountService, SavingsAccountService>();
+builder.Services.AddScoped<ICurrentAccountService, CurrentAccountService>();
 
 builder.Services.AddCors(options =>
 {
@@ -38,9 +45,6 @@ builder.Services.AddCors(options =>
               .AllowAnyOrigin();
     });
 });
-
-// Register health service
-builder.Services.AddSingleton<IHealthService, HealthService>();
 
 var app = builder.Build();
 

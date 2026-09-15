@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OnboardingPlatform.Core.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -11,19 +12,18 @@ namespace OnboardingPlatform.Core.Models
     public class SavingsAccountDetail
     {
         [Key]
-        public int SavingsAccountId { get; set; }
+        public Guid SavingsAccountId { get; set; } = Guid.NewGuid();    
 
         [ForeignKey("CustomerProduct")]
-        public int CustomerProductId { get; set; }
-        public CustomerProduct CustomerProduct { get; set; }
+        public Guid CustomerProductId { get; set; }
+        public CustomerProduct CustomerProduct { get; set; } = null!;
 
         [StringLength(10)]
-        public string AccountNumber { get; set; }
+        public string AccountNumber { get; set; } = string.Empty; // string(10)
 
         public string Currency { get; set; } = "NGN"; // Default to Nigerian Naira
-        public decimal Balance { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
-        public  string Status { get; set; }
+        public decimal Balance { get; set; } = 0m;
+        public DateOnly DateOpened { get; set; }
+        public AccountStatus Status { get; set; }
     }
 }

@@ -5,26 +5,28 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using OnboardingPlatform.Core.Enums;
+
 
 namespace OnboardingPlatform.Core.Models
 {
     public class ConsentLog
     {
         [Key]
-        public int ConsentId { get; set; }
+        public Guid ConsentId { get; set; } = Guid.NewGuid();
 
         [ForeignKey("Customer")]
-        public int CustomerId { get; set; }
-        public Customer Customer { get; set; }
+        public Guid CustomerId { get; set; }
+        public Customer Customer { get; set; } = null!;
 
         [ForeignKey("Product")]
-        public int ProductId { get; set; }
-        public Product Product { get; set; }
+        public Guid ProductId { get; set; }
+        public Product Product { get; set; } = null!;
 
-        public string ConsentType { get; set; } = "REUSE_KYC_DATA";
+        public string ConsentType { get; set; } = string.Empty;
 
-        public DateTime GrantedAt { get; set; } = DateTime.Now;
+        public DateTime GrantedAt { get; set; }
 
-        public string Channel { get; set; } = "Web";
+        public Channel Channel { get; set; }
     }
 }

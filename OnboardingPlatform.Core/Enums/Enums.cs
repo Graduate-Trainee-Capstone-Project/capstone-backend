@@ -29,3 +29,21 @@ public enum Channel { WEB, MOBILE, USSD, BRANCH_ASSISTED }
 public enum CustomerProductStatus { PENDING, ACTIVE, REJECTED, CLOSED }
 
 public enum CustomerStatus { ACTIVE, SUSPENDED, CLOSED }
+
+public enum SecurityCheckType { SECURITY_QUESTION, FACIAL_RECOGNITION, OTP }
+
+public enum SecurityCheckStatus { PENDING, PASSED, FAILED }
+
+public enum AccountStatus { Active, Dormant, Closed }
+
+public enum ContributionScheme { MandatoryCPS, Voluntary, MicroPensionPlan }
+
+public enum DocumentType
+{
+    NATIONAL_ID_CARD,
+    PASSPORT,
+    DRIVERS_LICENSE,
+    UTILITY_BILL,
+    PASSPORT_PHOTOGRAPH,
+    SIGNATURE
+}
