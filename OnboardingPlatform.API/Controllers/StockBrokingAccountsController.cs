@@ -4,7 +4,7 @@ using OnboardingPlatform.Services.Interfaces;
 namespace OnboardingPlatform.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("/stockBrokingAccountsBy")]
     public class StockBrokingAccountsController : ControllerBase
     {
         private readonly IStockBrokingAccountService _stockBrokingService;
@@ -14,7 +14,7 @@ namespace OnboardingPlatform.API.Controllers
             _stockBrokingService = stockBrokingService;
         }
 
-        [HttpGet("GetStockBrokingAccountByCustomerProduct/{customerProductId:guid}")]
+        [HttpGet("{customerProductId:guid}")]
         public async Task<IActionResult> GetStockBrokingAccountByCustomerProduct(Guid customerProductId)
         {
             var account = await _stockBrokingService.GetByCustomerProductIdAsync(customerProductId);

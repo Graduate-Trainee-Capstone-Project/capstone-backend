@@ -4,7 +4,7 @@ using OnboardingPlatform.Services.Interfaces;
 namespace OnboardingPlatform.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("/pensionAccount")]
     public class PensionAccountsController : ControllerBase
     {
         private readonly IPensionAccountService _pensionService;
@@ -14,7 +14,7 @@ namespace OnboardingPlatform.API.Controllers
             _pensionService = pensionService;
         }
 
-        [HttpGet("GetPensionAccountByCustomerProduct/{customerProductId:guid}")]
+        [HttpGet("{customerProductId:guid}")]
         public async Task<IActionResult> GetPensionAccountByCustomerProduct(Guid customerProductId)
         {
             var account = await _pensionService.GetByCustomerProductIdAsync(customerProductId);

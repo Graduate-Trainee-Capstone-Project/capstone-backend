@@ -5,7 +5,7 @@ using OnboardingPlatform.Services.Interfaces;
 namespace OnboardingPlatform.API.Controllers
 {
     [ApiController]
-    [Route("api/applications")]
+    [Route("/applications")]
     public class ApplicationsController : ControllerBase
     {
         private readonly IApplicationService _appService;

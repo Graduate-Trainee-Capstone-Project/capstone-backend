@@ -6,7 +6,7 @@ using OnboardingPlatform.Services.Interfaces;
 namespace OnboardingPlatform.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("/consentBy")]
     public class ConsentLogsController : ControllerBase
     {
         private readonly IConsentService _consentService;
@@ -16,12 +16,12 @@ namespace OnboardingPlatform.API.Controllers
             _consentService = consentService;
         }
 
-        [HttpGet("GetConsentsByCustomer/{customerId:guid}")]
+        [HttpGet("/{customerId:guid}")]
         public async Task<IActionResult> GetConsentsByCustomer(Guid customerId)
             => Ok(await _consentService.GetByCustomerAsync(customerId));
 
 
-        [HttpPost("RecordConsent/{customerId:guid}")]
+        [HttpPost("/{customerId:guid}")]
         public async Task<IActionResult> RecordConsent(Guid customerId, [FromBody] ConsentRequest request)
         {
             if (!Enum.TryParse<Channel>(request.Channel, true, out var channel))

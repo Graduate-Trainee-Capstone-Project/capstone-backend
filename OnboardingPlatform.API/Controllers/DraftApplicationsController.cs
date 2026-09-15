@@ -5,7 +5,7 @@ using OnboardingPlatform.Services.Interfaces;
 namespace OnboardingPlatform.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("/applications")]
     public class DraftApplicationsController : ControllerBase
     {
         private readonly IDraftService _draftService;
@@ -15,7 +15,7 @@ namespace OnboardingPlatform.API.Controllers
             _draftService = draftService;
         }
 
-        [HttpPut("SaveDraft/{draftId:guid}")]
+        [HttpPut("{draftId:guid}/save")]
         public async Task<IActionResult> SaveDraft(Guid draftId, [FromBody] SaveDraftRequest request)
         {
             try
@@ -29,7 +29,7 @@ namespace OnboardingPlatform.API.Controllers
             }
         }
 
-        [HttpGet("GetDraftById/{draftId:guid}")]
+        [HttpGet("{draftId:guid}")]
         public async Task<IActionResult> GetDraftById(Guid draftId)
         {
             var draft = await _draftService.GetByIdAsync(draftId);

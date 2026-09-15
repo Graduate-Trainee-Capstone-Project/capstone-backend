@@ -7,7 +7,7 @@ using OnboardingPlatform.Data.Implementations;
 namespace OnboardingPlatform.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("/products")]
     public class ProductsController : ControllerBase
     {
         private readonly AppDbContext _db;
@@ -31,7 +31,7 @@ namespace OnboardingPlatform.API.Controllers
         /// <summary>
         /// GET /api/products/{productCode}
         /// </summary>
-        [HttpGet("{productCode}")]
+        [HttpGet("by/{productCode}")]
         public async Task<IActionResult> GetByCode(string productCode)
         {
             if (!Enum.TryParse<ProductCode>(

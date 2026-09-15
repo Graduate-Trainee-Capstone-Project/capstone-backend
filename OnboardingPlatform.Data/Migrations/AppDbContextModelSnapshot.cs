@@ -391,7 +391,8 @@ namespace OnboardingPlatform.Data.Migrations
                         new
                         {
                             ProductId = new Guid("aaaaaaaa-0001-0001-0001-aaaaaaaaaaaa"),
-                            CreatedAt = new DateTime(2026, 9, 15, 13, 0, 41, 548, DateTimeKind.Local).AddTicks(7987),
+                            AdditionalFieldsSchema = "[\r\n  {\r\n    \"field\": \"branchPreference\",\r\n    \"label\": \"Preferred branch\",\r\n    \"type\": \"text\",\r\n    \"required\": false\r\n  }\r\n]",
+                            CreatedAt = new DateTime(2026, 9, 15, 20, 15, 41, 44, DateTimeKind.Local).AddTicks(4010),
                             IsActive = true,
                             ProductCode = "SAVINGS",
                             ProductName = "Savings Account",
@@ -400,7 +401,7 @@ namespace OnboardingPlatform.Data.Migrations
                         new
                         {
                             ProductId = new Guid("aaaaaaaa-0002-0002-0002-aaaaaaaaaaaa"),
-                            CreatedAt = new DateTime(2026, 9, 15, 13, 0, 41, 548, DateTimeKind.Local).AddTicks(7995),
+                            CreatedAt = new DateTime(2026, 9, 15, 20, 15, 41, 44, DateTimeKind.Local).AddTicks(4016),
                             IsActive = true,
                             ProductCode = "CURRENT",
                             ProductName = "Current Account",
@@ -409,7 +410,8 @@ namespace OnboardingPlatform.Data.Migrations
                         new
                         {
                             ProductId = new Guid("aaaaaaaa-0003-0003-0003-aaaaaaaaaaaa"),
-                            CreatedAt = new DateTime(2026, 9, 15, 13, 0, 41, 548, DateTimeKind.Local).AddTicks(8002),
+                            AdditionalFieldsSchema = "[\r\n  {\r\n    \"field\": \"employerName\",\r\n    \"label\": \"Employer name\",\r\n    \"type\": \"text\",\r\n    \"required\": false\r\n  },\r\n  {\r\n    \"field\": \"contributionScheme\",\r\n    \"label\": \"Contribution scheme\",\r\n    \"type\": \"select\",\r\n    \"options\": [\r\n      \"MandatoryCPS\",\r\n      \"Voluntary\",\r\n      \"MicroPensionPlan\"\r\n    ],\r\n    \"required\": true\r\n  }\r\n]",
+                            CreatedAt = new DateTime(2026, 9, 15, 20, 15, 41, 44, DateTimeKind.Local).AddTicks(4021),
                             IsActive = true,
                             ProductCode = "PENSION_RSA",
                             ProductName = "Pension (RSA)",
@@ -418,7 +420,7 @@ namespace OnboardingPlatform.Data.Migrations
                         new
                         {
                             ProductId = new Guid("aaaaaaaa-0004-0004-0004-aaaaaaaaaaaa"),
-                            CreatedAt = new DateTime(2026, 9, 15, 13, 0, 41, 548, DateTimeKind.Local).AddTicks(8025),
+                            CreatedAt = new DateTime(2026, 9, 15, 20, 15, 41, 44, DateTimeKind.Local).AddTicks(4037),
                             IsActive = true,
                             ProductCode = "STOCKBROKING",
                             ProductName = "Stockbroking",
@@ -427,7 +429,7 @@ namespace OnboardingPlatform.Data.Migrations
                         new
                         {
                             ProductId = new Guid("aaaaaaaa-0005-0005-0005-aaaaaaaaaaaa"),
-                            CreatedAt = new DateTime(2026, 9, 15, 13, 0, 41, 548, DateTimeKind.Local).AddTicks(8032),
+                            CreatedAt = new DateTime(2026, 9, 15, 20, 15, 41, 44, DateTimeKind.Local).AddTicks(4041),
                             IsActive = true,
                             ProductCode = "INSURANCE",
                             ProductName = "Insurance",

@@ -119,12 +119,90 @@ namespace OnboardingPlatform.Data.Implementations
 
             // ── Seed Products ─────────────────────────────────────────
             modelBuilder.Entity<Product>().HasData(
-                new Product { ProductId = Guid.Parse("aaaaaaaa-0001-0001-0001-aaaaaaaaaaaa"), ProductCode = ProductCode.SAVINGS, ProductName = "Savings Account", RequiredIdentifiers = "[\"BVN\"]", IsActive = true, CreatedAt = DateTime.Now },
-                new Product { ProductId = Guid.Parse("aaaaaaaa-0002-0002-0002-aaaaaaaaaaaa"), ProductCode = ProductCode.CURRENT, ProductName = "Current Account", RequiredIdentifiers = "[\"BVN\"]", IsActive = true, CreatedAt = DateTime.Now },
-                new Product { ProductId = Guid.Parse("aaaaaaaa-0003-0003-0003-aaaaaaaaaaaa"), ProductCode = ProductCode.PENSION_RSA, ProductName = "Pension (RSA)", RequiredIdentifiers = "[\"NIN\",\"PHONE\"]", IsActive = true, CreatedAt = DateTime.Now },
-                new Product { ProductId = Guid.Parse("aaaaaaaa-0004-0004-0004-aaaaaaaaaaaa"), ProductCode = ProductCode.STOCKBROKING, ProductName = "Stockbroking", RequiredIdentifiers = "[\"EMAIL\"]", IsActive = true, CreatedAt = DateTime.Now },
-                new Product { ProductId = Guid.Parse("aaaaaaaa-0005-0005-0005-aaaaaaaaaaaa"), ProductCode = ProductCode.INSURANCE, ProductName = "Insurance", RequiredIdentifiers = "[\"EMAIL\",\"PHONE\"]", IsActive = true, CreatedAt = DateTime.Now }
-            );
+            new Product
+            {
+                ProductId = Guid.Parse("aaaaaaaa-0001-0001-0001-aaaaaaaaaaaa"),
+                ProductCode = ProductCode.SAVINGS,
+                ProductName = "Savings Account",
+                RequiredIdentifiers = "[\"BVN\"]",
+                AdditionalFieldsSchema = """
+                [
+                  {
+                    "field": "branchPreference",
+                    "label": "Preferred branch",
+                    "type": "text",
+                    "required": false
+                  }
+                ]
+                """,
+                IsActive = true,
+                CreatedAt = DateTime.Now
+            },
+
+            new Product
+            {
+                ProductId = Guid.Parse("aaaaaaaa-0002-0002-0002-aaaaaaaaaaaa"),
+                ProductCode = ProductCode.CURRENT,
+                ProductName = "Current Account",
+                RequiredIdentifiers = "[\"BVN\"]",
+                AdditionalFieldsSchema = null,
+                IsActive = true,
+                CreatedAt = DateTime.Now
+            },
+
+            new Product
+            {
+                ProductId = Guid.Parse("aaaaaaaa-0003-0003-0003-aaaaaaaaaaaa"),
+                ProductCode = ProductCode.PENSION_RSA,
+                ProductName = "Pension (RSA)",
+                RequiredIdentifiers = "[\"NIN\",\"PHONE\"]",
+                AdditionalFieldsSchema = """
+                [
+                  {
+                    "field": "employerName",
+                    "label": "Employer name",
+                    "type": "text",
+                    "required": false
+                  },
+                  {
+                    "field": "contributionScheme",
+                    "label": "Contribution scheme",
+                    "type": "select",
+                    "options": [
+                      "MandatoryCPS",
+                      "Voluntary",
+                      "MicroPensionPlan"
+                    ],
+                    "required": true
+                  }
+                ]
+                """,
+                IsActive = true,
+                CreatedAt = DateTime.Now
+            },
+
+            new Product
+            {
+                ProductId = Guid.Parse("aaaaaaaa-0004-0004-0004-aaaaaaaaaaaa"),
+                ProductCode = ProductCode.STOCKBROKING,
+                ProductName = "Stockbroking",
+                RequiredIdentifiers = "[\"EMAIL\"]",
+                AdditionalFieldsSchema = null,
+                IsActive = true,
+                CreatedAt = DateTime.Now
+            },
+
+            new Product
+            {
+                ProductId = Guid.Parse("aaaaaaaa-0005-0005-0005-aaaaaaaaaaaa"),
+                ProductCode = ProductCode.INSURANCE,
+                ProductName = "Insurance",
+                RequiredIdentifiers = "[\"EMAIL\",\"PHONE\"]",
+                AdditionalFieldsSchema = null,
+                IsActive = true,
+                CreatedAt = DateTime.Now
+            }
+        );
 
             // ── Security Check ─────────────────────────────────────────
             modelBuilder.Entity<SecurityCheck>(b =>

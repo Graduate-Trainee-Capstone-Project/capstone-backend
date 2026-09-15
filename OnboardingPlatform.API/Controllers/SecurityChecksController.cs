@@ -4,7 +4,7 @@ using OnboardingPlatform.Services.Interfaces;
 namespace OnboardingPlatform.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("/securityCheckBy")]
     public class SecurityChecksController : ControllerBase
     {
         private readonly ISecurityService _securityService;
@@ -14,7 +14,7 @@ namespace OnboardingPlatform.API.Controllers
             _securityService = securityService;
         }
                 
-        [HttpGet("GetSecurityChecksByDraft/{draftId:guid}")]
+        [HttpGet("{draftId:guid}")]
         public async Task<IActionResult> GetSecurityChecksByDraft(Guid draftId)
             => Ok(await _securityService.GetChecksForDraftAsync(draftId));
     }

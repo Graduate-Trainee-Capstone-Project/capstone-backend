@@ -18,11 +18,28 @@ namespace OnboardingPlatform.Services.Implementations
     {
         private readonly AppDbContext _db;
         private readonly IIdentityService _identity;
+        private readonly ISavingsAccountService _savings;
+        private readonly ICurrentAccountService _current;
+        private readonly IPensionAccountService _pension;
+        private readonly IStockBrokingAccountService _stockBroking;
+        private readonly IConsentService _consent;
 
-        public ApplicationService(AppDbContext db, IIdentityService identity)
+        public ApplicationService(
+            AppDbContext db, 
+            IIdentityService identity, 
+            ISavingsAccountService savings, 
+            ICurrentAccountService current,
+            IPensionAccountService pension,
+            IStockBrokingAccountService stockBroking,
+            IConsentService consent)
         {
             _db = db;
             _identity = identity;
+            _savings = savings;
+            _current = current;
+            _pension = pension;
+            _stockBroking = stockBroking;
+            _consent = consent;
         }
 
         // ──────────────────────────────────────────────
@@ -97,7 +114,9 @@ namespace OnboardingPlatform.Services.Implementations
                     IsExistingCustomer = existingDraft.CustomerId.HasValue,
                     RequiresSecurityCheck = false, // already passed on first attempt
                     CurrentStep = existingDraft.CurrentStep.ToString(),
-                    FormData = DeserializeFormData(existingDraft.FormDataJson),
+                    FormData = DeserializeFormData(existingDraft.FormDataJson)
+                        .Where(kvp => kvp.Value is not null)
+                        .ToDictionary(kvp => kvp.Key, kvp => kvp.Value!),
                     ExistingCustomer = resumedCustomerData
                 };
             }
@@ -392,8 +411,22 @@ namespace OnboardingPlatform.Services.Implementations
 
             _db.CustomerProducts.Add(customerProduct);
 
-            // 5. Generate mock account reference based on product type
-            var productAccountRef = GenerateAccountReference(draft.Product.ProductCode);
+            // 5. Actually provision the account in the right table, and log consent
+            //    if this was an existing customer reusing their KYC data.
+            if (draft.CustomerId != null)
+            {
+                await _consent.RecordConsentAsync(customerId, draft.ProductId, draft.Channel);
+            }
+
+            string productAccountRef = draft.Product.ProductCode switch
+            {
+                ProductCode.SAVINGS => (await _savings.CreateAsync(customerProduct.CustomerProductId, formData)).AccountNumber,
+                ProductCode.CURRENT => (await _current.CreateAsync(customerProduct.CustomerProductId, formData)).AccountNumber,
+                ProductCode.PENSION_RSA => (await _pension.CreateAsync(customerProduct.CustomerProductId, formData)).RsaPin,
+                ProductCode.STOCKBROKING => (await _stockBroking.CreateAsync(customerProduct.CustomerProductId, formData)).CscsNumber,
+                ProductCode.INSURANCE => "POL" + Random.Shared.Next(100_000_000, 999_999_999), // still a stub — no InsuranceAccountDetails table exists yet
+                _ => Guid.NewGuid().ToString("N")[..10].ToUpper()
+            };
 
             // 6. Mark draft as SUBMITTED
             draft.Status = DraftStatus.SUBMITTED;
@@ -422,11 +455,11 @@ namespace OnboardingPlatform.Services.Implementations
             _ => Guid.NewGuid().ToString("N")[..10].ToUpper()
         };
 
-        private static Dictionary<string, object> DeserializeFormData(string json)
+        private static Dictionary<string, object?> DeserializeFormData(string json)
         {
             try
             {
-                return JsonSerializer.Deserialize<Dictionary<string, object>>(json) ?? new();
+                return JsonSerializer.Deserialize<Dictionary<string, object?>>(json) ?? new();
             }
             catch
             {
@@ -434,7 +467,7 @@ namespace OnboardingPlatform.Services.Implementations
             }
         }
 
-        private static string GetString(Dictionary<string, object> data, string key)
+        private static string GetString(Dictionary<string, object?> data, string key)
         {
             if (data.TryGetValue(key, out var v))
             {
@@ -444,7 +477,7 @@ namespace OnboardingPlatform.Services.Implementations
             return string.Empty;
         }
 
-        private static string? GetStringOrNull(Dictionary<string, object> data, string key)
+        private static string? GetStringOrNull(Dictionary<string, object?> data, string key)
         {
             if (data.TryGetValue(key, out var v))
             {
@@ -454,7 +487,7 @@ namespace OnboardingPlatform.Services.Implementations
             return null;
         }
 
-        private static DateTime? ParseDate(Dictionary<string, object> data, string key)
+        private static DateTime? ParseDate(Dictionary<string, object?> data, string key)
         {
             var raw = GetStringOrNull(data, key);
             return DateTime.TryParse(raw, out var result) ? result : null;

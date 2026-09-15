@@ -4,7 +4,7 @@ using OnboardingPlatform.Services.Interfaces;
 namespace OnboardingPlatform.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("/savingsAcountBy")]
     public class SavingsAccountsController : ControllerBase
     {
         private readonly ISavingsAccountService _savingsService;
@@ -14,7 +14,7 @@ namespace OnboardingPlatform.API.Controllers
             _savingsService = savingsService;
         }
 
-       [HttpGet("GetSavingsAccountByCustomerProduct/{customerProductId:guid}")]
+       [HttpGet("{customerProductId:guid}")]
         public async Task<IActionResult> GetSavingsAccountByCustomerProduct(Guid customerProductId)
         {
             var account = await _savingsService.GetByCustomerProductIdAsync(customerProductId);
