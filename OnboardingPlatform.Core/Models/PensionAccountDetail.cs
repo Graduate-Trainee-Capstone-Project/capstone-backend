@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OnboardingPlatform.Core.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -11,22 +12,22 @@ namespace OnboardingPlatform.Core.Models
     public class PensionAccountDetail
     {
         [Key]
-        public int PensionAccountId { get; set; }
+        public Guid PensionAccountId { get; set; } = Guid.NewGuid();
 
         [ForeignKey("CustomerProduct")]
-        public int CustomerProductId { get; set; }
-        public CustomerProduct CustomerProduct { get; set; }
+        public Guid CustomerProductId { get; set; }
+        public CustomerProduct CustomerProduct { get; set; } = null!;
 
-        public string RsaPin { get; set; } //mock generated for demo
+        public string RsaPin { get; set; } = string.Empty; //mock generated for demo
 
         public string PfaName { get; set; } = "Stanbic IBTC Pension Managers Limited";
 
-        public string EmployerName { get; set; }
+        public string? EmployerName { get; set; }
 
-        public string ContributionScheme { get; set; } // "MandatoryCPS", "Voluntary", "MicroPensionPlan"
+        public ContributionScheme ContributionScheme { get; set; }
 
-        public DateTime DateRegistered { get; set; } = DateTime.Now;
+        public DateOnly DateRegistered { get; set; }
 
-        public string Status { get; set; } = "Active";
+        public AccountStatus Status { get; set; }
     }
 }

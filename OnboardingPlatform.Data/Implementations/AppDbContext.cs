@@ -21,6 +21,11 @@ namespace OnboardingPlatform.Data.Implementations
 
         // Emmanuel's tables — declared here so EF knows the full graph, but Emmanuel owns the logic
         public DbSet<DraftApplication> DraftApplications => Set<DraftApplication>();
+        public DbSet<ConsentLog> ConsentLogs => Set<ConsentLog>();
+        public DbSet<CurrentAccountDetail> CurrentAccountDetails => Set<CurrentAccountDetail>();
+        public DbSet<SavingsAccountDetail> SavingsAccountDetails => Set<SavingsAccountDetail>();
+        public DbSet<PensionAccountDetail> PensionAccountDetails => Set<PensionAccountDetail>();
+        public DbSet<SecurityCheck> SecurityChecks => Set<SecurityCheck>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -75,6 +80,7 @@ namespace OnboardingPlatform.Data.Implementations
                  .HasForeignKey(cp => cp.ProductId);
             });
 
+            // ── DraftApplications ──────────────────────────────────────
             modelBuilder.Entity<DraftApplication>(e =>
             {
                 e.HasKey(d => d.DraftId);
@@ -112,6 +118,79 @@ namespace OnboardingPlatform.Data.Implementations
                 new Product { ProductId = Guid.Parse("aaaaaaaa-0004-0004-0004-aaaaaaaaaaaa"), ProductCode = ProductCode.STOCKBROKING, ProductName = "Stockbroking", RequiredIdentifiers = "[\"EMAIL\"]", IsActive = true, CreatedAt = DateTime.Now },
                 new Product { ProductId = Guid.Parse("aaaaaaaa-0005-0005-0005-aaaaaaaaaaaa"), ProductCode = ProductCode.INSURANCE, ProductName = "Insurance", RequiredIdentifiers = "[\"EMAIL\",\"PHONE\"]", IsActive = true, CreatedAt = DateTime.Now }
             );
+
+            // ── Security Check ─────────────────────────────────────────
+            modelBuilder.Entity<SecurityCheck>(b =>
+            {
+                b.HasKey(s => s.SecurityCheckId);
+                b.Property(s => s.CheckType).HasConversion<string>().HasMaxLength(30);
+                b.Property(s => s.Status).HasConversion<string>().HasMaxLength(20);
+
+                b.HasOne(s => s.DraftApplication)
+                    .WithMany()
+                    .HasForeignKey(s => s.DraftId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // ── Consent Logs ─────────────────────────────────────────
+            modelBuilder.Entity<ConsentLog>(e =>
+            {
+                e.HasKey(c => c.ConsentId);
+                e.Property(c => c.Channel).HasConversion<string>();
+
+                e.HasOne(c => c.Customer)
+                    .WithMany()
+                    .HasForeignKey(c => c.CustomerId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                e.HasOne(c => c.Product)
+                    .WithMany()
+                    .HasForeignKey(c => c.ProductId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ── Current Account Details ──────────────────────────────
+            modelBuilder.Entity<CurrentAccountDetail>(e =>
+            {
+                e.HasKey(c => c.CurrentAccountId);
+                e.Property(c => c.Status).HasConversion<string>();
+                e.Property(c => c.AccountNumber).HasMaxLength(10);
+                e.Property(c => c.Currency).HasMaxLength(3);
+                e.Property(c => c.Balance).HasColumnType("decimal(18,2)");
+
+                e.HasOne(c => c.CustomerProduct)
+                    .WithMany()
+                    .HasForeignKey(c => c.CustomerProductId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // ── Savings Account Details ──────────────────────────────
+            modelBuilder.Entity<SavingsAccountDetail>(e =>
+            {
+                e.HasKey(s => s.SavingsAccountId);
+                e.Property(s => s.Status).HasConversion<string>();
+                e.Property(s => s.AccountNumber).HasMaxLength(10);
+                e.Property(s => s.Currency).HasMaxLength(3);
+                e.Property(s => s.Balance).HasColumnType("decimal(18,2)");
+
+                e.HasOne(s => s.CustomerProduct)
+                    .WithMany()
+                    .HasForeignKey(s => s.CustomerProductId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // ── Pension Account Details ──────────────────────────────
+            modelBuilder.Entity<PensionAccountDetail>(e =>
+            {
+                e.HasKey(p => p.PensionAccountId);
+                e.Property(p => p.Status).HasConversion<string>();
+                e.Property(p => p.ContributionScheme).HasConversion<string>();
+
+                e.HasOne(p => p.CustomerProduct)
+                    .WithMany()
+                    .HasForeignKey(p => p.CustomerProductId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
         }
     }
 }
