@@ -12,7 +12,7 @@ using OnboardingPlatform.Data.Implementations;
 namespace OnboardingPlatform.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260915191542_InitialCreate")]
+    [Migration("20260915194421_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -395,7 +395,7 @@ namespace OnboardingPlatform.Data.Migrations
                         {
                             ProductId = new Guid("aaaaaaaa-0001-0001-0001-aaaaaaaaaaaa"),
                             AdditionalFieldsSchema = "[\r\n  {\r\n    \"field\": \"branchPreference\",\r\n    \"label\": \"Preferred branch\",\r\n    \"type\": \"text\",\r\n    \"required\": false\r\n  }\r\n]",
-                            CreatedAt = new DateTime(2026, 9, 15, 20, 15, 41, 44, DateTimeKind.Local).AddTicks(4010),
+                            CreatedAt = new DateTime(2026, 9, 15, 20, 44, 19, 154, DateTimeKind.Local).AddTicks(2240),
                             IsActive = true,
                             ProductCode = "SAVINGS",
                             ProductName = "Savings Account",
@@ -404,7 +404,7 @@ namespace OnboardingPlatform.Data.Migrations
                         new
                         {
                             ProductId = new Guid("aaaaaaaa-0002-0002-0002-aaaaaaaaaaaa"),
-                            CreatedAt = new DateTime(2026, 9, 15, 20, 15, 41, 44, DateTimeKind.Local).AddTicks(4016),
+                            CreatedAt = new DateTime(2026, 9, 15, 20, 44, 19, 154, DateTimeKind.Local).AddTicks(2252),
                             IsActive = true,
                             ProductCode = "CURRENT",
                             ProductName = "Current Account",
@@ -414,7 +414,7 @@ namespace OnboardingPlatform.Data.Migrations
                         {
                             ProductId = new Guid("aaaaaaaa-0003-0003-0003-aaaaaaaaaaaa"),
                             AdditionalFieldsSchema = "[\r\n  {\r\n    \"field\": \"employerName\",\r\n    \"label\": \"Employer name\",\r\n    \"type\": \"text\",\r\n    \"required\": false\r\n  },\r\n  {\r\n    \"field\": \"contributionScheme\",\r\n    \"label\": \"Contribution scheme\",\r\n    \"type\": \"select\",\r\n    \"options\": [\r\n      \"MandatoryCPS\",\r\n      \"Voluntary\",\r\n      \"MicroPensionPlan\"\r\n    ],\r\n    \"required\": true\r\n  }\r\n]",
-                            CreatedAt = new DateTime(2026, 9, 15, 20, 15, 41, 44, DateTimeKind.Local).AddTicks(4021),
+                            CreatedAt = new DateTime(2026, 9, 15, 20, 44, 19, 154, DateTimeKind.Local).AddTicks(2261),
                             IsActive = true,
                             ProductCode = "PENSION_RSA",
                             ProductName = "Pension (RSA)",
@@ -423,7 +423,7 @@ namespace OnboardingPlatform.Data.Migrations
                         new
                         {
                             ProductId = new Guid("aaaaaaaa-0004-0004-0004-aaaaaaaaaaaa"),
-                            CreatedAt = new DateTime(2026, 9, 15, 20, 15, 41, 44, DateTimeKind.Local).AddTicks(4037),
+                            CreatedAt = new DateTime(2026, 9, 15, 20, 44, 19, 154, DateTimeKind.Local).AddTicks(2278),
                             IsActive = true,
                             ProductCode = "STOCKBROKING",
                             ProductName = "Stockbroking",
@@ -432,7 +432,7 @@ namespace OnboardingPlatform.Data.Migrations
                         new
                         {
                             ProductId = new Guid("aaaaaaaa-0005-0005-0005-aaaaaaaaaaaa"),
-                            CreatedAt = new DateTime(2026, 9, 15, 20, 15, 41, 44, DateTimeKind.Local).AddTicks(4041),
+                            CreatedAt = new DateTime(2026, 9, 15, 20, 44, 19, 154, DateTimeKind.Local).AddTicks(2296),
                             IsActive = true,
                             ProductCode = "INSURANCE",
                             ProductName = "Insurance",
