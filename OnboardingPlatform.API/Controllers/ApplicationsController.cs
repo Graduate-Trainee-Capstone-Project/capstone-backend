@@ -13,10 +13,6 @@ namespace OnboardingPlatform.API.Controllers
         public ApplicationsController(IApplicationService appService)
             => _appService = appService;
 
-        /// <summary>
-        /// POST /api/applications/start
-        /// The CORE endpoint — product + identifier in, DraftId + routing decision out.
-        /// </summary>
         [HttpPost("start")]
         public async Task<IActionResult> Start([FromBody] StartApplicationRequest request)
         {
@@ -31,10 +27,6 @@ namespace OnboardingPlatform.API.Controllers
             }
         }
 
-        /// <summary>
-        /// POST /api/applications/{draftId}/finalize
-        /// Converts a completed draft into a real Customer + CustomerProduct.
-        /// </summary>
         [HttpPost("{draftId}/finalize")]
         public async Task<IActionResult> Finalize(Guid draftId)
         {
@@ -46,6 +38,14 @@ namespace OnboardingPlatform.API.Controllers
             catch (InvalidOperationException ex)
             {
                 return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    message = "An error occurred while finalizing the application.",
+                    details = ex.InnerException?.Message ?? ex.Message
+                });
             }
         }
     }

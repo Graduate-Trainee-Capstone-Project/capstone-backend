@@ -19,6 +19,6 @@ namespace OnboardingPlatform.Core.Models
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         // Navigation
-        public Customer Customer { get; set; } = null!;
+        //public Customer Customer { get; set; } = null!;
     }
 }

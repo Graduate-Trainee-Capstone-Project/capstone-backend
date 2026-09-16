@@ -5,10 +5,10 @@ using OnboardingPlatform.Core.Enums;
 using OnboardingPlatform.Core.Models;
 using OnboardingPlatform.Data.Implementations;
 using OnboardingPlatform.Services.Interfaces;
+using OnboardingPlatform.Core.Mappers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -114,9 +114,7 @@ namespace OnboardingPlatform.Services.Implementations
                     IsExistingCustomer = existingDraft.CustomerId.HasValue,
                     RequiresSecurityCheck = false, // already passed on first attempt
                     CurrentStep = existingDraft.CurrentStep.ToString(),
-                    FormData = DeserializeFormData(existingDraft.FormDataJson)
-                        .Where(kvp => kvp.Value is not null)
-                        .ToDictionary(kvp => kvp.Key, kvp => kvp.Value!),
+                    FormData = DraftApplicationMapper.DeserializeFormData(existingDraft.FormDataJson),
                     ExistingCustomer = resumedCustomerData
                 };
             }
@@ -188,8 +186,8 @@ namespace OnboardingPlatform.Services.Implementations
                 IsExistingCustomer = isExistingCustomer,
                 RequiresSecurityCheck = isExistingCustomer,
                 CurrentStep = startingStep.ToString(),
-                FormData = new Dictionary<string, object>(),
-                ExistingCustomer = existingCustomerData  // null for new customers, populated for existing
+                FormData = new DraftFormData(),   // fixed — was crashing on existingDraft.FormDataJson
+                ExistingCustomer = existingCustomerData
             };
         }
 
@@ -198,23 +196,24 @@ namespace OnboardingPlatform.Services.Implementations
         // ──────────────────────────────────────────────
         public async Task<FinalizeApplicationResponse> FinalizeApplicationAsync(Guid draftId)
         {
-            // 1. Load the draft — read FormDataJson from DB, not from request body
+            // 1. Load the draft with all necessary relationships
             var draft = await _db.DraftApplications
                 .Include(d => d.Product)
-                .FirstOrDefaultAsync(d =>
-                    d.DraftId == draftId &&
-                    d.Status == DraftStatus.IN_PROGRESS)
-                ?? throw new InvalidOperationException("Draft not found or already finalized.");
+                .FirstOrDefaultAsync(d => d.DraftId == draftId)
+                ?? throw new InvalidOperationException($"Draft '{draftId}' not found.");
 
-            // 2. Deserialize the form data Emmanuel's save endpoint has been building up
-            var formData = DeserializeFormData(draft.FormDataJson);
+            if (draft.Status != DraftStatus.IN_PROGRESS)
+            {
+                throw new InvalidOperationException($"Draft '{draftId}' is not in progress.");
+            }
 
+            var formData = DeserializeFormData(draft.FormDataJson) ?? new();
             Guid customerId;
 
-            if (draft.CustomerId == null)
+            // 2. NEW CUSTOMER PATH or EXISTING CUSTOMER PATH
+            if (!draft.CustomerId.HasValue)
             {
-                // ── NEW CUSTOMER PATH ─────────────────────────────────────
-                // 3a. Create the Customer record
+                // ── NEW CUSTOMER PATH ────────────────────────────────
                 var customer = new Customer
                 {
                     CustomerId = Guid.NewGuid(),
@@ -222,32 +221,43 @@ namespace OnboardingPlatform.Services.Implementations
                     MiddleName = GetStringOrNull(formData, "middleName"),
                     LastName = GetString(formData, "lastName"),
                     DateOfBirth = ParseDate(formData, "dateOfBirth"),
-                    Gender = GetStringOrNull(formData, "gender"),
+                    Gender = GetString(formData, "gender"),
                     Nationality = GetStringOrNull(formData, "nationality") ?? "Nigerian",
                     PhoneNumber = GetStringOrNull(formData, "phoneNumber"),
                     Email = GetStringOrNull(formData, "email"),
                     Status = CustomerStatus.ACTIVE,
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    CreatedAt = DateTime.Now
                 };
+
                 _db.Customers.Add(customer);
 
-                // 3b. Save the primary identifier (the one the product required, e.g. BVN)
-                _db.CustomerIdentifiers.Add(new CustomerIdentifier
-                {
-                    IdentifierId = Guid.NewGuid(),
-                    CustomerId = customer.CustomerId,
-                    IdentifierType = draft.PrimaryIdentifierType,
-                    IdentifierValueHash = draft.PrimaryIdentifierValueHash,
-                    IdentifierValueMasked = "(submitted)",
-                    IsVerified = true,
-                    VerifiedAt = DateTime.Now,
-                    CreatedAt = DateTime.Now
-                });
+                AddCustomerAddress(
+                    customer.CustomerId,
+                    formData,
+                    isPrimary: true);
 
-                // 3c. Save the secondary identifier if the product required one (e.g. PHONE for Pension)
-                if (draft.SecondaryIdentifierType.HasValue &&
-                    !string.IsNullOrEmpty(draft.SecondaryIdentifierValueHash))
+                // Save the PRIMARY identifier (e.g. BVN) — required so future
+                // /applications/start calls with this BVN can find this customer.
+                var bvnExists = await _db.CustomerIdentifiers.AnyAsync(i =>
+                    i.IdentifierType == draft.PrimaryIdentifierType &&
+                    i.IdentifierValueHash == draft.PrimaryIdentifierValueHash);
+
+                if (!bvnExists)
+                {
+                    _db.CustomerIdentifiers.Add(new CustomerIdentifier
+                    {
+                        IdentifierId = Guid.NewGuid(),
+                        CustomerId = customer.CustomerId,
+                        IdentifierType = draft.PrimaryIdentifierType,
+                        IdentifierValueHash = draft.PrimaryIdentifierValueHash,
+                        IdentifierValueMasked = "****" + draft.PrimaryIdentifierValueHash[^4..],
+                        IsVerified = true,
+                        CreatedAt = DateTime.Now
+                    });
+                }
+
+                // Save the SECONDARY identifier if this product required one (e.g. NIN+PHONE products)
+                if (draft.SecondaryIdentifierType.HasValue && !string.IsNullOrEmpty(draft.SecondaryIdentifierValueHash))
                 {
                     _db.CustomerIdentifiers.Add(new CustomerIdentifier
                     {
@@ -255,72 +265,51 @@ namespace OnboardingPlatform.Services.Implementations
                         CustomerId = customer.CustomerId,
                         IdentifierType = draft.SecondaryIdentifierType.Value,
                         IdentifierValueHash = draft.SecondaryIdentifierValueHash,
-                        IdentifierValueMasked = "(submitted)",
+                        IdentifierValueMasked = "****" + draft.SecondaryIdentifierValueHash[^4..],
                         IsVerified = true,
-                        VerifiedAt = DateTime.Now,
                         CreatedAt = DateTime.Now
                     });
                 }
 
-                // 3d. Save phone number as extra identifier if it was collected
-                //     (even if the product didn't require it — this is the cross-product bridge)
-                var phoneRaw = GetStringOrNull(formData, "phoneNumber");
-                if (!string.IsNullOrEmpty(phoneRaw) &&
-                    draft.PrimaryIdentifierType != IdentifierType.PHONE &&
-                    draft.SecondaryIdentifierType != IdentifierType.PHONE)
+                if (!string.IsNullOrEmpty(customer.PhoneNumber))
                 {
-                    // Avoid duplicate — only save if PHONE wasn't already saved above
-                    _db.CustomerIdentifiers.Add(new CustomerIdentifier
+                    var phoneHash = _identity.HashIdentifier(customer.PhoneNumber);
+                    var phoneExists = await _db.CustomerIdentifiers.AnyAsync(i =>
+                        i.IdentifierType == IdentifierType.PHONE &&
+                        i.IdentifierValueHash == phoneHash);
+
+                    if (!phoneExists)
                     {
-                        IdentifierId = Guid.NewGuid(),
-                        CustomerId = customer.CustomerId,
-                        IdentifierType = IdentifierType.PHONE,
-                        IdentifierValueHash = _identity.HashIdentifier(phoneRaw),
-                        IdentifierValueMasked = _identity.MaskIdentifier(phoneRaw),
-                        IsVerified = false,
-                        CreatedAt = DateTime.Now
-                    });
-                }
-
-                // 3e. Save email as extra identifier if it was collected
-                var emailRaw = GetStringOrNull(formData, "email");
-                if (!string.IsNullOrEmpty(emailRaw) &&
-                    draft.PrimaryIdentifierType != IdentifierType.EMAIL &&
-                    draft.SecondaryIdentifierType != IdentifierType.EMAIL)
-                {
-                    _db.CustomerIdentifiers.Add(new CustomerIdentifier
-                    {
-                        IdentifierId = Guid.NewGuid(),
-                        CustomerId = customer.CustomerId,
-                        IdentifierType = IdentifierType.EMAIL,
-                        IdentifierValueHash = _identity.HashIdentifier(emailRaw),
-                        IdentifierValueMasked = _identity.MaskIdentifier(emailRaw),
-                        IsVerified = false,
-                        CreatedAt = DateTime.Now
-                    });
-                }
-
-                // 3f. Save address if provided
-                if (formData.TryGetValue("address", out var addrObj) && addrObj != null)
-                {
-                    var addrJson = addrObj is JsonElement je
-                        ? je.GetRawText()
-                        : JsonSerializer.Serialize(addrObj);
-
-                    var addr = JsonSerializer.Deserialize<Dictionary<string, string>>(addrJson);
-
-                    if (addr != null)
-                    {
-                        _db.CustomerAddresses.Add(new CustomerAddress
+                        _db.CustomerIdentifiers.Add(new CustomerIdentifier
                         {
-                            AddressId = Guid.NewGuid(),
+                            IdentifierId = Guid.NewGuid(),
                             CustomerId = customer.CustomerId,
-                            HouseNumber = addr.TryGetValue("houseNumber", out var hn) ? hn : null,
-                            Street = addr.TryGetValue("street", out var st) ? st : string.Empty,
-                            City = addr.TryGetValue("city", out var ct) ? ct : string.Empty,
-                            State = addr.TryGetValue("state", out var s) ? s : string.Empty,
-                            Country = addr.TryGetValue("country", out var co) ? co : "Nigeria",
-                            IsPrimary = true,
+                            IdentifierType = IdentifierType.PHONE,
+                            IdentifierValueHash = phoneHash,
+                            IdentifierValueMasked = _identity.MaskIdentifier(customer.PhoneNumber),
+                            IsVerified = false,
+                            CreatedAt = DateTime.Now
+                        });
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(customer.Email))
+                {
+                    var emailHash = _identity.HashIdentifier(customer.Email);
+                    var emailExists = await _db.CustomerIdentifiers.AnyAsync(i =>
+                        i.IdentifierType == IdentifierType.EMAIL &&
+                        i.IdentifierValueHash == emailHash);
+
+                    if (!emailExists)
+                    {
+                        _db.CustomerIdentifiers.Add(new CustomerIdentifier
+                        {
+                            IdentifierId = Guid.NewGuid(),
+                            CustomerId = customer.CustomerId,
+                            IdentifierType = IdentifierType.EMAIL,
+                            IdentifierValueHash = emailHash,
+                            IdentifierValueMasked = _identity.MaskIdentifier(customer.Email),
+                            IsVerified = false,
                             CreatedAt = DateTime.Now
                         });
                     }
@@ -328,15 +317,14 @@ namespace OnboardingPlatform.Services.Implementations
 
                 customerId = customer.CustomerId;
                 draft.CustomerId = customerId;
+
+                await _db.SaveChangesAsync();
             }
             else
             {
                 // ── EXISTING CUSTOMER PATH ────────────────────────────────
-                // Customer record already exists — just use their ID
-                // No need to re-create anything, their data is already in the DB
                 customerId = draft.CustomerId.Value;
 
-                // Update their record if they changed anything (e.g. new address)
                 var existingCustomer = await _db.Customers
                     .Include(c => c.Addresses)
                     .FirstOrDefaultAsync(c => c.CustomerId == customerId);
@@ -345,32 +333,113 @@ namespace OnboardingPlatform.Services.Implementations
                 {
                     existingCustomer.UpdatedAt = DateTime.Now;
 
-                    // If they provided a new address for this product application, save it
-                    if (formData.TryGetValue("address", out var addrObj) && addrObj != null)
+                    if (formData.Address != null && formData.Address.Count > 0)
                     {
-                        var addrJson = addrObj is JsonElement je2
-                            ? je2.GetRawText()
-                            : JsonSerializer.Serialize(addrObj);
+                        var addr = formData.Address[0];
 
-                        var addr = JsonSerializer.Deserialize<Dictionary<string, string>>(addrJson);
-
-                        if (addr != null && !existingCustomer.Addresses.Any())
+                        if (!string.IsNullOrEmpty(addr.Street))
                         {
-                            // Only add if they don't already have one
-                            _db.CustomerAddresses.Add(new CustomerAddress
+                            var hasSimilarAddress = existingCustomer.Addresses.Any(a =>
+                                a.Street == addr.Street &&
+                                a.City == addr.City);
+
+                            if (!hasSimilarAddress)
                             {
-                                AddressId = Guid.NewGuid(),
-                                CustomerId = customerId,
-                                HouseNumber = addr.TryGetValue("houseNumber", out var hn) ? hn : null,
-                                Street = addr.TryGetValue("street", out var st) ? st : string.Empty,
-                                City = addr.TryGetValue("city", out var ct) ? ct : string.Empty,
-                                State = addr.TryGetValue("state", out var s) ? s : string.Empty,
-                                Country = addr.TryGetValue("country", out var co) ? co : "Nigeria",
-                                IsPrimary = false,  // they already have a primary from their first product
-                                CreatedAt = DateTime.Now
-                            });
+                                _db.CustomerAddresses.Add(new CustomerAddress
+                                {
+                                    AddressId = Guid.NewGuid(),
+                                    CustomerId = customerId,
+                                    HouseNumber = addr.HouseNumber,
+                                    Street = addr.Street,
+                                    City = addr.City ?? string.Empty,
+                                    State = addr.State ?? string.Empty,
+                                    Country = string.IsNullOrWhiteSpace(addr.Country) ? "Nigeria" : addr.Country,
+                                    IsPrimary = false,
+                                    CreatedAt = DateTime.Now
+                                });
+                            }
                         }
                     }
+
+                    await _db.SaveChangesAsync();
+                }
+                else
+                {
+                    // Draft points at a CustomerId that doesn't exist yet — treat as new customer,
+                    // creating them under the SAME CustomerId the draft already references.
+                    var customer = new Customer
+                    {
+                        CustomerId = customerId,
+                        FirstName = GetString(formData, "firstName"),
+                        MiddleName = GetStringOrNull(formData, "middleName"),
+                        LastName = GetString(formData, "lastName"),
+                        DateOfBirth = ParseDate(formData, "dateOfBirth"),
+                        Gender = GetString(formData, "gender"),
+                        Nationality = GetStringOrNull(formData, "nationality") ?? "Nigerian",
+                        PhoneNumber = GetStringOrNull(formData, "phoneNumber"),
+                        Email = GetStringOrNull(formData, "email"),
+                        Status = CustomerStatus.ACTIVE,
+                        CreatedAt = DateTime.Now
+                    };
+
+                    _db.Customers.Add(customer);
+
+                    AddCustomerAddress(customer.CustomerId, formData, isPrimary: true);
+
+                    _db.CustomerIdentifiers.Add(new CustomerIdentifier
+                    {
+                        IdentifierId = Guid.NewGuid(),
+                        CustomerId = customer.CustomerId,
+                        IdentifierType = draft.PrimaryIdentifierType,
+                        IdentifierValueHash = draft.PrimaryIdentifierValueHash,
+                        IdentifierValueMasked = "****" + draft.PrimaryIdentifierValueHash[^4..],
+                        IsVerified = true,
+                        CreatedAt = DateTime.Now
+                    });
+
+                    if (draft.SecondaryIdentifierType.HasValue && !string.IsNullOrEmpty(draft.SecondaryIdentifierValueHash))
+                    {
+                        _db.CustomerIdentifiers.Add(new CustomerIdentifier
+                        {
+                            IdentifierId = Guid.NewGuid(),
+                            CustomerId = customer.CustomerId,
+                            IdentifierType = draft.SecondaryIdentifierType.Value,
+                            IdentifierValueHash = draft.SecondaryIdentifierValueHash,
+                            IdentifierValueMasked = "****" + draft.SecondaryIdentifierValueHash[^4..],
+                            IsVerified = true,
+                            CreatedAt = DateTime.Now
+                        });
+                    }
+
+                    if (!string.IsNullOrEmpty(customer.PhoneNumber))
+                    {
+                        _db.CustomerIdentifiers.Add(new CustomerIdentifier
+                        {
+                            IdentifierId = Guid.NewGuid(),
+                            CustomerId = customer.CustomerId,
+                            IdentifierType = IdentifierType.PHONE,
+                            IdentifierValueHash = _identity.HashIdentifier(customer.PhoneNumber),
+                            IdentifierValueMasked = _identity.MaskIdentifier(customer.PhoneNumber),
+                            IsVerified = false,
+                            CreatedAt = DateTime.Now
+                        });
+                    }
+
+                    if (!string.IsNullOrEmpty(customer.Email))
+                    {
+                        _db.CustomerIdentifiers.Add(new CustomerIdentifier
+                        {
+                            IdentifierId = Guid.NewGuid(),
+                            CustomerId = customer.CustomerId,
+                            IdentifierType = IdentifierType.EMAIL,
+                            IdentifierValueHash = _identity.HashIdentifier(customer.Email),
+                            IdentifierValueMasked = _identity.MaskIdentifier(customer.Email),
+                            IsVerified = false,
+                            CreatedAt = DateTime.Now
+                        });
+                    }
+
+                    await _db.SaveChangesAsync();
                 }
             }
 
@@ -382,8 +451,6 @@ namespace OnboardingPlatform.Services.Implementations
 
             if (existingCustomerProduct is not null)
             {
-                // The customer already owns this product.
-                // Mark this draft as completed instead of inserting a duplicate link.
                 draft.Status = DraftStatus.SUBMITTED;
                 draft.CurrentStep = DraftStep.SUBMITTED;
                 draft.LastUpdatedAt = DateTime.Now;
@@ -410,25 +477,26 @@ namespace OnboardingPlatform.Services.Implementations
             };
 
             _db.CustomerProducts.Add(customerProduct);
+            await _db.SaveChangesAsync();
 
-            // 5. Actually provision the account in the right table, and log consent
-            //    if this was an existing customer reusing their KYC data.
+            // 5. Record consent if applicable
             if (draft.CustomerId != null)
             {
                 await _consent.RecordConsentAsync(customerId, draft.ProductId, draft.Channel);
             }
 
+            // 6. Provision the account based on product type
             string productAccountRef = draft.Product.ProductCode switch
             {
                 ProductCode.SAVINGS => (await _savings.CreateAsync(customerProduct.CustomerProductId, formData)).AccountNumber,
                 ProductCode.CURRENT => (await _current.CreateAsync(customerProduct.CustomerProductId, formData)).AccountNumber,
                 ProductCode.PENSION_RSA => (await _pension.CreateAsync(customerProduct.CustomerProductId, formData)).RsaPin,
                 ProductCode.STOCKBROKING => (await _stockBroking.CreateAsync(customerProduct.CustomerProductId, formData)).CscsNumber,
-                ProductCode.INSURANCE => "POL" + Random.Shared.Next(100_000_000, 999_999_999), // still a stub — no InsuranceAccountDetails table exists yet
+                ProductCode.INSURANCE => "POL" + Random.Shared.Next(100_000_000, 999_999_999),
                 _ => Guid.NewGuid().ToString("N")[..10].ToUpper()
             };
 
-            // 6. Mark draft as SUBMITTED
+            // 7. Mark draft as SUBMITTED
             draft.Status = DraftStatus.SUBMITTED;
             draft.CurrentStep = DraftStep.SUBMITTED;
             draft.LastUpdatedAt = DateTime.Now;
@@ -455,42 +523,47 @@ namespace OnboardingPlatform.Services.Implementations
             _ => Guid.NewGuid().ToString("N")[..10].ToUpper()
         };
 
-        private static Dictionary<string, object?> DeserializeFormData(string json)
-        {
-            try
-            {
-                return JsonSerializer.Deserialize<Dictionary<string, object?>>(json) ?? new();
-            }
-            catch
-            {
-                return new();
-            }
-        }
+        private static OnboardingPlatform.Core.DTOs.Responses.DraftFormData DeserializeFormData(string json)
+            => OnboardingPlatform.Core.Mappers.DraftApplicationMapper.DeserializeFormData(json);
 
-        private static string GetString(Dictionary<string, object?> data, string key)
+        private static string GetString(OnboardingPlatform.Core.DTOs.Responses.DraftFormData data, string key) => key switch
         {
-            if (data.TryGetValue(key, out var v))
-            {
-                if (v is JsonElement je) return je.GetString() ?? string.Empty;
-                return v?.ToString() ?? string.Empty;
-            }
-            return string.Empty;
-        }
+            "firstName" => data.FirstName ?? string.Empty,
+            "lastName" => data.LastName ?? string.Empty,
+            "gender" => data.Gender ?? string.Empty,
+            _ => string.Empty
+        };
 
-        private static string? GetStringOrNull(Dictionary<string, object?> data, string key)
+        private static string? GetStringOrNull(OnboardingPlatform.Core.DTOs.Responses.DraftFormData data, string key) => key switch
         {
-            if (data.TryGetValue(key, out var v))
-            {
-                if (v is JsonElement je) return je.GetString();
-                return v?.ToString();
-            }
-            return null;
-        }
+            "middleName" => data.MiddleName,
+            "phoneNumber" => data.PhoneNumber,
+            "email" => data.Email,
+            _ => null
+        };
 
-        private static DateTime? ParseDate(Dictionary<string, object?> data, string key)
+        private static DateTime? ParseDate(OnboardingPlatform.Core.DTOs.Responses.DraftFormData data, string key)
+            => key == "dateOfBirth" ? data.DateOfBirth : null;
+
+        private void AddCustomerAddress(Guid customerId, OnboardingPlatform.Core.DTOs.Responses.DraftFormData formData, bool isPrimary)
         {
-            var raw = GetStringOrNull(data, key);
-            return DateTime.TryParse(raw, out var result) ? result : null;
+            if (formData.Address == null || formData.Address.Count == 0) return;
+
+            var address = formData.Address[0];
+            if (string.IsNullOrWhiteSpace(address.Street)) return;
+
+            _db.CustomerAddresses.Add(new CustomerAddress
+            {
+                AddressId = Guid.NewGuid(),
+                CustomerId = customerId,
+                HouseNumber = address.HouseNumber,
+                Street = address.Street,
+                City = address.City ?? string.Empty,
+                State = address.State ?? string.Empty,
+                Country = string.IsNullOrWhiteSpace(address.Country) ? "Nigeria" : address.Country,
+                IsPrimary = isPrimary,
+                CreatedAt = DateTime.Now
+            });
         }
     }
 }

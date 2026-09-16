@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\OnboardingPlatform.Data\OnboardingPlatform.Data.csproj" />
     <ProjectReference Include="..\OnboardingPlatform.Services\OnboardingPlatform.Services.csproj" />
+    <ProjectReference Include="..\OnboardingPlatform.Utilities\OnboardingPlatform.Utilities.csproj" />
   </ItemGroup>
 
 </Project>

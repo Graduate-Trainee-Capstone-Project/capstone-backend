@@ -52,9 +52,9 @@ namespace OnboardingPlatform.Data.Implementations
                 e.HasMany(c => c.Identifiers)
                  .WithOne(i => i.Customer)
                  .HasForeignKey(i => i.CustomerId);
-                e.HasMany(c => c.Addresses)
-                 .WithOne(a => a.Customer)
-                 .HasForeignKey(a => a.CustomerId);
+                //e.HasMany(c => c.Addresses)
+                 //.WithOne(a => a.Customer)
+                 //.HasForeignKey(a => a.CustomerId);
             });
 
             // ── CustomerIdentifiers ───────────────────────────────────

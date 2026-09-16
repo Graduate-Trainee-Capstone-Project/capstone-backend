@@ -1,6 +1,7 @@
 ﻿using OnboardingPlatform.Core.DTOs.Responses;
 using OnboardingPlatform.Core.Models;
 using System.Text.Json;
+using OnboardingPlatform.Utilities;
 
 namespace OnboardingPlatform.API.Mappers
 {
@@ -12,9 +13,9 @@ namespace OnboardingPlatform.API.Mappers
             ProductCode = product.ProductCode.ToString(),
             ProductName = product.ProductName,
             RequiredIdentifiers = JsonSerializer.Deserialize<List<string>>(product.RequiredIdentifiers) ?? new(),
-            AdditionalFieldsSchema = product.AdditionalFieldsSchema != null
-            ? JsonSerializer.Deserialize<object>(product.AdditionalFieldsSchema)
-            : null
+            AdditionalFieldsSchema = string.IsNullOrWhiteSpace(product.AdditionalFieldsSchema)
+                ? null
+                : JsonDocument.Parse(product.AdditionalFieldsSchema).RootElement.ToObject()
         };
     }
 }

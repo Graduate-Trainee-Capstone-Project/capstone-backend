@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using OnboardingPlatform.Core.DTOs.Responses;
+using System.Text.Json;
 
 namespace OnboardingPlatform.Core.DTOs.Requests
 {
     public class SaveDraftRequest
     {
         public string CurrentStep { get; set; } = string.Empty;
-        public Dictionary<string, object?> FormData { get; set; } = new();
+        public DraftFormData FormData { get; set; } = new();
         public string Channel { get; set; } = string.Empty;
     }
 }

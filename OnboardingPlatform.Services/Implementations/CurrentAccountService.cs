@@ -5,6 +5,8 @@ using OnboardingPlatform.Core.Mappers;
 using OnboardingPlatform.Core.Models;
 using OnboardingPlatform.Data.Implementations;
 using OnboardingPlatform.Services.Interfaces;
+using System;
+using System.Threading.Tasks;
 
 namespace OnboardingPlatform.Services.Implementations
 {
@@ -18,8 +20,12 @@ namespace OnboardingPlatform.Services.Implementations
             _context = context;
         }
 
-        public async Task<CurrentAccountDetailResponse> CreateAsync(Guid customerProductId, Dictionary<string, object?> formData)
+        public async Task<CurrentAccountDetailResponse> CreateAsync(Guid customerProductId, DraftFormData formData)
         {
+            // NOTE: DraftFormData has no CheckBookRequested field yet — defaulting to false.
+            // Add a `public bool? CheckBookRequested { get; set; }` to DraftFormData later if needed.
+            var checkBookRequested = false;
+
             var account = new CurrentAccountDetail
             {
                 CurrentAccountId = Guid.NewGuid(),
@@ -27,7 +33,7 @@ namespace OnboardingPlatform.Services.Implementations
                 AccountNumber = "0" + Rng.Next(100_000_000, 999_999_999),
                 Currency = "NGN",
                 Balance = 0m,
-                CheckBookRequested = formData.TryGetValue("checkBookRequested", out var cb) && cb is bool b && b,
+                CheckBookRequested = checkBookRequested,
                 DateOpened = DateOnly.FromDateTime(DateTime.Now),
                 Status = AccountStatus.Active
             };

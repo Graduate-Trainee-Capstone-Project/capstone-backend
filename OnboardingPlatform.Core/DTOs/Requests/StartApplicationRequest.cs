@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+
 namespace OnboardingPlatform.Core.DTOs.Requests
 {
     public class StartApplicationRequest

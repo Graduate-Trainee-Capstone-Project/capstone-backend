@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using OnboardingPlatform.Core.Mappers;
 using OnboardingPlatform.Core.DTOs.Requests;
 using OnboardingPlatform.Core.DTOs.Responses;
+using OnboardingPlatform.Core.Mappers;
 using OnboardingPlatform.Data.Implementations;
 using OnboardingPlatform.Services.Interfaces;
 

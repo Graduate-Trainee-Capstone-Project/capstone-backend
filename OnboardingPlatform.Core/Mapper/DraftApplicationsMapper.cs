@@ -19,7 +19,7 @@ namespace OnboardingPlatform.Core.Mappers
             {
                 DraftId = draft.DraftId,
                 ProductId = draft.ProductId,
-                CustomerId = draft.CustomerId,
+                //CustomerId = draft.CustomerId,
                 PrimaryIdentifierType = draft.PrimaryIdentifierType.ToString(),
                 SecondaryIdentifierType = draft.SecondaryIdentifierType?.ToString(),
                 CurrentStep = draft.CurrentStep.ToString(),
@@ -43,13 +43,24 @@ namespace OnboardingPlatform.Core.Mappers
             };
         }
 
-        // Merges incoming fields onto the existing FormDataJson instead of
-        // overwriting it — each wizard step only sends its own fields.
         public static void ApplySave(this DraftApplication draft, SaveDraftRequest request)
         {
             var existing = DeserializeFormData(draft.FormDataJson);
-            foreach (var kvp in request.FormData)
-                existing[kvp.Key] = kvp.Value;
+            var incoming = request.FormData;
+
+            existing.FirstName = incoming.FirstName ?? existing.FirstName;
+            existing.MiddleName = incoming.MiddleName ?? existing.MiddleName;
+            existing.LastName = incoming.LastName ?? existing.LastName;
+            existing.DateOfBirth = incoming.DateOfBirth ?? existing.DateOfBirth;
+            existing.Gender = incoming.Gender ?? existing.Gender;
+            existing.Email = incoming.Email ?? existing.Email;
+            existing.PhoneNumber = incoming.PhoneNumber ?? existing.PhoneNumber;
+            existing.Address = incoming.Address ?? existing.Address;
+            existing.AccountType = incoming.AccountType ?? existing.AccountType;
+            existing.InitialDeposit = incoming.InitialDeposit ?? existing.InitialDeposit;
+            existing.Currency = incoming.Currency ?? existing.Currency;
+            existing.PreferredBranch = incoming.PreferredBranch ?? existing.PreferredBranch;
+            existing.Documents = incoming.Documents ?? existing.Documents;
 
             draft.FormDataJson = JsonSerializer.Serialize(existing, JsonOptions);
 
@@ -64,11 +75,17 @@ namespace OnboardingPlatform.Core.Mappers
             draft.LastUpdatedAt = DateTime.Now;
         }
 
-        public static Dictionary<string, object?> DeserializeFormData(string json)
+        public static DraftFormData DeserializeFormData(string json)
         {
-            if (string.IsNullOrWhiteSpace(json)) return new Dictionary<string, object?>();
-            return JsonSerializer.Deserialize<Dictionary<string, object?>>(json, JsonOptions)
-                   ?? new Dictionary<string, object?>();
+            if (string.IsNullOrWhiteSpace(json)) return new DraftFormData();
+            try
+            {
+                return JsonSerializer.Deserialize<DraftFormData>(json, JsonOptions) ?? new DraftFormData();
+            }
+            catch (JsonException)
+            {
+                return new DraftFormData(); // old/incompatible shape — ignore rather than 500
+            }
         }
     }
 }

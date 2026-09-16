@@ -5,6 +5,8 @@ using OnboardingPlatform.Core.Mappers;
 using OnboardingPlatform.Core.Models;
 using OnboardingPlatform.Data.Implementations;
 using OnboardingPlatform.Services.Interfaces;
+using System;
+using System.Threading.Tasks;
 
 namespace OnboardingPlatform.Services.Implementations
 {
@@ -18,7 +20,7 @@ namespace OnboardingPlatform.Services.Implementations
             _context = context;
         }
 
-        public async Task<StockBrokingAccountDetailResponse> CreateAsync(Guid customerProductId, Dictionary<string, object?> formData)
+        public async Task<StockBrokingAccountDetailResponse> CreateAsync(Guid customerProductId, DraftFormData formData)
         {
             var account = new StockBrokingAccountDetail
             {

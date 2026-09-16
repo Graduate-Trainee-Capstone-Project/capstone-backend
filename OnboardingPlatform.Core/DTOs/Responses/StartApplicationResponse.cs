@@ -1,5 +1,6 @@
 ﻿using OnboardingPlatform.Core.Enums;
 using OnboardingPlatform.Core.Models;
+using System.Text.Json;
 
 namespace OnboardingPlatform.Core.DTOs.Responses
 {
@@ -10,7 +11,7 @@ namespace OnboardingPlatform.Core.DTOs.Responses
         public bool IsExistingCustomer { get; set; }
         public bool RequiresSecurityCheck { get; set; }
         public string CurrentStep { get; set; } = string.Empty;
-        public Dictionary<string, object> FormData { get; set; } = new();
+        public DraftFormData FormData { get; set; } = new();
 
         // pre-filled customer data for existing customers
         public ExistingCustomerData? ExistingCustomer { get; set; }

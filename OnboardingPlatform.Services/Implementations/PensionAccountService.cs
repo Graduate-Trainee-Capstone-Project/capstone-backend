@@ -5,6 +5,8 @@ using OnboardingPlatform.Core.Mappers;
 using OnboardingPlatform.Core.Models;
 using OnboardingPlatform.Data.Implementations;
 using OnboardingPlatform.Services.Interfaces;
+using System;
+using System.Threading.Tasks;
 
 namespace OnboardingPlatform.Services.Implementations
 {
@@ -18,10 +20,12 @@ namespace OnboardingPlatform.Services.Implementations
             _context = context;
         }
 
-        public async Task<PensionAccountDetailResponse> CreateAsync(Guid customerProductId, Dictionary<string, object?> formData)
+        public async Task<PensionAccountDetailResponse> CreateAsync(Guid customerProductId, DraftFormData formData)
         {
-            var schemeRaw = formData.TryGetValue("contributionScheme", out var sch) ? sch?.ToString() : "MandatoryCPS";
-            Enum.TryParse<ContributionScheme>(schemeRaw, true, out var scheme);
+            // NOTE: DraftFormData has no ContributionScheme/EmployerName fields yet —
+            // defaulting for now. Add them to DraftFormData later if this product needs them.
+            var scheme = ContributionScheme.MandatoryCPS;
+            string? employerName = null;
 
             var account = new PensionAccountDetail
             {
@@ -29,7 +33,7 @@ namespace OnboardingPlatform.Services.Implementations
                 CustomerProductId = customerProductId,
                 RsaPin = "PEN" + Rng.Next(10_000_000, 99_999_999),
                 PfaName = "Stanbic IBTC Pension Managers Limited",
-                EmployerName = formData.TryGetValue("employerName", out var emp) ? emp?.ToString() : null,
+                EmployerName = employerName,
                 ContributionScheme = scheme,
                 DateRegistered = DateOnly.FromDateTime(DateTime.Now),
                 Status = AccountStatus.Active
