@@ -43,7 +43,7 @@ namespace OnboardingPlatform.Core.Mappers
             };
         }
 
-        public static void ApplySave(this DraftApplication draft, SaveDraftRequest request)
+        public static void ApplySave(this DraftApplication draft, InternalSaveDraftRequest request)
         {
             var existing = DeserializeFormData(draft.FormDataJson);
             var incoming = request.FormData;

@@ -16,7 +16,7 @@ namespace OnboardingPlatform.Services.Implementations
             _context = context;
         }
 
-        public async Task<SaveDraftResponse> SaveAsync(Guid draftId, SaveDraftRequest request)
+        public async Task<SaveDraftResponse> SaveAsync(Guid draftId, InternalSaveDraftRequest request)
         {
             var draft = await _context.DraftApplications.FindAsync(draftId)
                 ?? throw new KeyNotFoundException("Draft application not found.");
@@ -26,7 +26,6 @@ namespace OnboardingPlatform.Services.Implementations
 
             return draft.ToSaveResponse();
         }
-
         public async Task<DraftApplicationResponse?> GetByIdAsync(Guid draftId)
         {
             var draft = await _context.DraftApplications

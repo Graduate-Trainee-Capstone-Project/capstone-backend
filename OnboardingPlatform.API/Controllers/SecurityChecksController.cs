@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using OnboardingPlatform.Core.DTOs.Requests;
 using OnboardingPlatform.Services.Interfaces;
 
 namespace OnboardingPlatform.API.Controllers
@@ -17,5 +18,23 @@ namespace OnboardingPlatform.API.Controllers
         [HttpGet("{draftId:guid}")]
         public async Task<IActionResult> GetSecurityChecksByDraft(Guid draftId)
             => Ok(await _securityService.GetChecksForDraftAsync(draftId));
+
+        [HttpPost("{draftId:guid}")]
+        public async Task<IActionResult> PerformSecurityCheck(Guid draftId, [FromBody] SecurityCheckRequest request)
+        {
+            try
+            {
+                var result = await _securityService.PerformCheckAsync(draftId, request);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

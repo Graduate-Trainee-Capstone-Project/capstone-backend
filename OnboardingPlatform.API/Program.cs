@@ -63,6 +63,8 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 
 app.UseCors("AllowAll");
 
+app.UseStaticFiles();
+
 app.UseAuthorization();
 
 app.MapControllers();
