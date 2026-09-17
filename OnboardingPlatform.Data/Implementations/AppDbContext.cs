@@ -118,6 +118,7 @@ namespace OnboardingPlatform.Data.Implementations
             });
 
             // ── Seed Products ─────────────────────────────────────────
+            // ── Seed Products ─────────────────────────────────────────
             modelBuilder.Entity<Product>().HasData(
             new Product
             {
@@ -141,22 +142,22 @@ namespace OnboardingPlatform.Data.Implementations
 
             new Product
             {
-                ProductId = Guid.Parse("aaaaaaaa-0002-0002-0002-aaaaaaaaaaaa"),
-                ProductCode = ProductCode.CURRENT,
-                ProductName = "Current Account",
-                RequiredIdentifiers = "[\"BVN\"]",
-                AdditionalFieldsSchema = null,
-                IsActive = true,
-                CreatedAt = DateTime.Now
+              ProductId = Guid.Parse("aaaaaaaa-0002-0002-0002-aaaaaaaaaaaa"),
+              ProductCode = ProductCode.CURRENT,
+              ProductName = "Current Account",
+              RequiredIdentifiers = "[\"BVN\"]",
+              AdditionalFieldsSchema = null,
+              IsActive = true,
+              CreatedAt = DateTime.Now
             },
 
             new Product
             {
-                ProductId = Guid.Parse("aaaaaaaa-0003-0003-0003-aaaaaaaaaaaa"),
-                ProductCode = ProductCode.PENSION_RSA,
-                ProductName = "Pension (RSA)",
-                RequiredIdentifiers = "[\"NIN\",\"PHONE\"]",
-                AdditionalFieldsSchema = """
+              ProductId = Guid.Parse("aaaaaaaa-0003-0003-0003-aaaaaaaaaaaa"),
+              ProductCode = ProductCode.PENSION_RSA,
+              ProductName = "Pension (RSA)",
+              RequiredIdentifiers = "[\"BVN\",\"NIN\"]",
+              AdditionalFieldsSchema = """
                 [
                   {
                     "field": "employerName",
@@ -183,26 +184,26 @@ namespace OnboardingPlatform.Data.Implementations
 
             new Product
             {
-                ProductId = Guid.Parse("aaaaaaaa-0004-0004-0004-aaaaaaaaaaaa"),
-                ProductCode = ProductCode.STOCKBROKING,
-                ProductName = "Stockbroking",
-                RequiredIdentifiers = "[\"EMAIL\"]",
-                AdditionalFieldsSchema = null,
-                IsActive = true,
-                CreatedAt = DateTime.Now
+              ProductId = Guid.Parse("aaaaaaaa-0004-0004-0004-aaaaaaaaaaaa"),
+              ProductCode = ProductCode.STOCKBROKING,
+              ProductName = "Stockbroking",
+              RequiredIdentifiers = "[\"BVN\",\"EMAIL\"]",
+              AdditionalFieldsSchema = null,
+              IsActive = true,
+              CreatedAt = DateTime.Now
             },
 
             new Product
             {
-                ProductId = Guid.Parse("aaaaaaaa-0005-0005-0005-aaaaaaaaaaaa"),
-                ProductCode = ProductCode.INSURANCE,
-                ProductName = "Insurance",
-                RequiredIdentifiers = "[\"EMAIL\",\"PHONE\"]",
-                AdditionalFieldsSchema = null,
-                IsActive = true,
-                CreatedAt = DateTime.Now
+              ProductId = Guid.Parse("aaaaaaaa-0005-0005-0005-aaaaaaaaaaaa"),
+              ProductCode = ProductCode.INSURANCE,
+              ProductName = "Insurance",
+              RequiredIdentifiers = "[\"BVN\",\"PHONE\"]",
+              AdditionalFieldsSchema = null,
+              IsActive = true,
+              CreatedAt = DateTime.Now
             }
-        );
+            );
 
             // ── Security Check ─────────────────────────────────────────
             modelBuilder.Entity<SecurityCheck>(b =>

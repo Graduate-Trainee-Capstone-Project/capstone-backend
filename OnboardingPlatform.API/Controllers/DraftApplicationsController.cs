@@ -43,15 +43,18 @@ namespace OnboardingPlatform.API.Controllers
 
                 if (!string.IsNullOrWhiteSpace(request.Street))
                 {
+                    var existingDraft = await _draftService.GetByIdAsync(draftId);
+                    var existingAddr = existingDraft?.FormData.Address?.FirstOrDefault();
+
                     formData.Address = new List<AddressInfo>
                     {
                         new AddressInfo
                         {
-                            HouseNumber = request.HouseNumber,
+                            HouseNumber = request.HouseNumber ?? existingAddr?.HouseNumber,
                             Street = request.Street,
-                            City = request.City,
-                            State = request.State,
-                            Country = request.Country
+                            City = request.City ?? existingAddr?.City,
+                            State = request.State ?? existingAddr?.State,
+                            Country = request.Country ?? existingAddr?.Country
                         }
                     };
                 }
