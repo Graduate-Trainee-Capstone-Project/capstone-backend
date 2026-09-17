@@ -24,6 +24,9 @@ namespace OnboardingPlatform.API.Controllers
         [HttpPost("/{customerId:guid}")]
         public async Task<IActionResult> RecordConsent(Guid customerId, [FromBody] ConsentRequest request)
         {
+            if (!request.Consented)
+                return BadRequest(new { message = "Consent must be given to proceed." });
+
             if (!Enum.TryParse<Channel>(request.Channel, true, out var channel))
                 return BadRequest(new { message = $"Unknown channel '{request.Channel}'." });
 

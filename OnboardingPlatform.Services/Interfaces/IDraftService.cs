@@ -5,7 +5,6 @@ namespace OnboardingPlatform.Services.Interfaces
 {
     public interface IDraftService
     {
-        //Task<SaveDraftResponse> SaveAsync(Guid draftId, SaveDraftRequest request);
         Task<DraftApplicationResponse?> GetByIdAsync(Guid draftId);
         Task<SaveDraftResponse> SaveAsync(Guid draftId, InternalSaveDraftRequest request);
 

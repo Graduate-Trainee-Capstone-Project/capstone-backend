@@ -282,8 +282,6 @@ namespace OnboardingPlatform.Data.Implementations
             {
                 e.HasKey(s => s.StockBrokingAccountId);
                 e.Property(s => s.Status).HasConversion<string>();
-                e.Property(s => s.CscsNumber).HasMaxLength(20);
-                e.Property(s => s.TradingAccountNumber).HasMaxLength(20);
 
                 e.HasOne(s => s.CustomerProduct)
                     .WithMany()

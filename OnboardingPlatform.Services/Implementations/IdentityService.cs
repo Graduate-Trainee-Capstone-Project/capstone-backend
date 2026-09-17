@@ -3,8 +3,6 @@ using OnboardingPlatform.Core.Enums;
 using OnboardingPlatform.Data.Implementations;
 using OnboardingPlatform.Services.Interfaces;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -40,44 +38,18 @@ namespace OnboardingPlatform.Services.Implementations
             string? secondaryType = null,
             string? secondaryHash = null)
         {
-            if (!Enum.TryParse<IdentifierType>(
-                    identifierType,
-                    ignoreCase: true,
-                    out var parsedIdentifierType))
-            {
-                return null;
-            }
-
-
+            // Search by HASH ONLY — ignore identifier type. A customer who
+            // registered with their BVN for savings can be found the same way
+            // when they type that same BVN for pension, stockbroking, etc.
             var primary = await _db.CustomerIdentifiers
-                .FirstOrDefaultAsync(i =>
-                    i.IdentifierType == parsedIdentifierType &&
-                    i.IdentifierValueHash == identifierHash);
+                .FirstOrDefaultAsync(i => i.IdentifierValueHash == identifierHash);
 
             if (primary == null) return null;
 
-            // If product requires a secondary identifier (e.g. Pension needs NIN + PHONE),
-            // we verify both belong to the same customer
-            if (secondaryType != null && secondaryHash != null)
-            {
-                if (!Enum.TryParse<IdentifierType>(
-                        secondaryType,
-                        ignoreCase: true,
-                        out var parsedSecondaryType))
-                {
-                    return null;
-                }
-
-
-                var secondary = await _db.CustomerIdentifiers
-                    .FirstOrDefaultAsync(i =>
-                        i.IdentifierType == parsedSecondaryType &&
-                        i.IdentifierValueHash == secondaryHash &&
-                        i.CustomerId == primary.CustomerId);
-
-                if (secondary == null) return null;
-            }
-
+            // Secondary is informational only — if the customer already has it
+            // stored, great; if not, we still recognize them by primary (BVN)
+            // and the secondary (e.g. NIN) gets captured fresh at finalize.
+            // We don't block recognition on it.
             return primary.CustomerId;
         }
     }

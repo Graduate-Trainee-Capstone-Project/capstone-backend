@@ -44,25 +44,29 @@ namespace OnboardingPlatform.API.Controllers
                 if (!string.IsNullOrWhiteSpace(request.Street))
                 {
                     formData.Address = new List<AddressInfo>
-            {
-                new AddressInfo
-                {
-                    HouseNumber = request.HouseNumber,
-                    Street = request.Street,
-                    City = request.City,
-                    State = request.State,
-                    Country = request.Country
-                }
-            };
+                    {
+                        new AddressInfo
+                        {
+                            HouseNumber = request.HouseNumber,
+                            Street = request.Street,
+                            City = request.City,
+                            State = request.State,
+                            Country = request.Country
+                        }
+                    };
                 }
 
+                var allowedTypes = new[] { "image/jpeg", "image/png", "image/jpg", "application/pdf" };
+                var uploadsFolder = Path.Combine(_env.WebRootPath ?? "wwwroot", "uploads");
+
+                var newDocuments = new List<DocumentInfo>();
+
+                // Document 1
                 if (request.DocumentFile != null && request.DocumentFile.Length > 0)
                 {
-                    var allowedTypes = new[] { "image/jpeg", "image/png", "image/jpg", "application/pdf" };
                     if (!allowedTypes.Contains(request.DocumentFile.ContentType.ToLower()))
-                        return BadRequest(new { message = "Only JPG, PNG, and PDF files are allowed." });
+                        return BadRequest(new { message = $"'{request.DocumentFile.FileName}' is not allowed. Only JPG, PNG, and PDF." });
 
-                    var uploadsFolder = Path.Combine(_env.WebRootPath ?? "wwwroot", "uploads");
                     Directory.CreateDirectory(uploadsFolder);
 
                     var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(request.DocumentFile.FileName)}";
@@ -73,17 +77,46 @@ namespace OnboardingPlatform.API.Controllers
 
                     var fileUrl = $"{Request.Scheme}://{Request.Host}/uploads/{fileName}";
 
-                    formData.Documents = new List<DocumentInfo>
-            {
-                new DocumentInfo
-                {
-                    Type = request.DocumentType ?? "UNKNOWN",
-                    Url = fileUrl
-                }
-            };
+                    newDocuments.Add(new DocumentInfo
+                    {
+                        Type = request.DocumentType ?? "UNKNOWN",
+                        Url = fileUrl
+                    });
                 }
 
-                // Build internal request with DraftFormData
+                // Document 2
+                if (request.SecondDocumentFile != null && request.SecondDocumentFile.Length > 0)
+                {
+                    if (!allowedTypes.Contains(request.SecondDocumentFile.ContentType.ToLower()))
+                        return BadRequest(new { message = $"'{request.SecondDocumentFile.FileName}' is not allowed. Only JPG, PNG, and PDF." });
+
+                    Directory.CreateDirectory(uploadsFolder);
+
+                    var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(request.SecondDocumentFile.FileName)}";
+                    var filePath = Path.Combine(uploadsFolder, fileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                        await request.SecondDocumentFile.CopyToAsync(stream);
+
+                    var fileUrl = $"{Request.Scheme}://{Request.Host}/uploads/{fileName}";
+
+                    newDocuments.Add(new DocumentInfo
+                    {
+                        Type = request.SecondDocumentType ?? "UNKNOWN",
+                        Url = fileUrl
+                    });
+                }
+
+                if (newDocuments.Count > 0)
+                {
+                    // Merge with any documents already saved on this draft, so uploading
+                    // one now doesn't wipe out one uploaded in an earlier save call.
+                    var existing = await _draftService.GetByIdAsync(draftId);
+                    var existingDocs = existing?.FormData.Documents ?? new List<DocumentInfo>();
+
+                    formData.Documents = existingDocs.Concat(newDocuments).ToList();
+                }
+
                 var internalRequest = new InternalSaveDraftRequest
                 {
                     CurrentStep = request.CurrentStep,

@@ -11,5 +11,6 @@ namespace OnboardingPlatform.Core.DTOs.Requests
         public Guid ProductId { get; set; }
         public string ConsentType { get; set; } = "REUSE_KYC_DATA";
         public string Channel { get; set; } = string.Empty;
+        public bool Consented { get; set; }
     }
 }

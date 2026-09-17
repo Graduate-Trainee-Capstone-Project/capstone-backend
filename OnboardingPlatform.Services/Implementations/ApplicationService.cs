@@ -491,7 +491,7 @@ namespace OnboardingPlatform.Services.Implementations
                 ProductCode.SAVINGS => (await _savings.CreateAsync(customerProduct.CustomerProductId, formData)).AccountNumber,
                 ProductCode.CURRENT => (await _current.CreateAsync(customerProduct.CustomerProductId, formData)).AccountNumber,
                 ProductCode.PENSION_RSA => (await _pension.CreateAsync(customerProduct.CustomerProductId, formData)).RsaPin,
-                ProductCode.STOCKBROKING => (await _stockBroking.CreateAsync(customerProduct.CustomerProductId, formData)).CscsNumber,
+                ProductCode.STOCKBROKING => (await _stockBroking.CreateAsync(customerProduct.CustomerProductId, formData)).StockBrokingAccountId.ToString(),
                 ProductCode.INSURANCE => "POL" + Random.Shared.Next(100_000_000, 999_999_999),
                 _ => Guid.NewGuid().ToString("N")[..10].ToUpper()
             };

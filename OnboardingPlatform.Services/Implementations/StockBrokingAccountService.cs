@@ -26,9 +26,6 @@ namespace OnboardingPlatform.Services.Implementations
             {
                 StockBrokingAccountId = Guid.NewGuid(),
                 CustomerProductId = customerProductId,
-                CscsNumber = "CSC" + Rng.Next(100_000_000, 999_999_999),
-                BrokerageFirm = "Stanbic IBTC Stockbrokers Limited",
-                TradingAccountNumber = "TR" + Rng.Next(1_000_000, 9_999_999),
                 DateOpened = DateOnly.FromDateTime(DateTime.Now),
                 Status = AccountStatus.Active
             };

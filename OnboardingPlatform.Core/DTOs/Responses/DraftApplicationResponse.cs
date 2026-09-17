@@ -30,7 +30,7 @@ namespace OnboardingPlatform.Core.DTOs.Responses
         public string? Gender { get; set; }
         public string? Email { get; set; }
         public string? PhoneNumber { get; set; }
-        public List<AddressInfo> Address { get; set; } = new();
+        public List<AddressInfo>? Address { get; set; }
         public string? AccountType { get; set; }
         public decimal? InitialDeposit { get; set; }
         public string? Currency { get; set; }

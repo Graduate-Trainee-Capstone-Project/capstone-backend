@@ -29,9 +29,14 @@ namespace OnboardingPlatform.Core.DTOs.Requests
         public string? State { get; set; }
         public string? Country { get; set; }
 
-        // Document
+        // Document 1
         public string? DocumentType { get; set; }
         public IFormFile? DocumentFile { get; set; }
+
+        // Document 2 — some products require two documents in one step
+        // (e.g. ID card + proof of address)
+        public string? SecondDocumentType { get; set; }
+        public IFormFile? SecondDocumentFile { get; set; }
     }
 
     public class InternalSaveDraftRequest
